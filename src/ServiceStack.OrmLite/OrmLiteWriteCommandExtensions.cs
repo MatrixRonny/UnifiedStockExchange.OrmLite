@@ -71,8 +71,7 @@ namespace ServiceStack.OrmLite
         internal static bool CreateTable<T>(this IDbCommand dbCmd, string tableName = null, bool overwrite = false)
         {
             var tableType = typeof(T);
-            ModelDefinition modelDef = tableType.GetModelDefinition();
-            if (tableName != null) modelDef.Alias = tableName;
+            ModelDefinition modelDef = tableType.GetModelDefinition(tableName);
             return CreateTable(dbCmd, overwrite, modelDef);
         }
 
@@ -110,21 +109,21 @@ namespace ServiceStack.OrmLite
                     }
 
                     // sequences must be created before tables
-                    var sequenceList = dialectProvider.SequenceList(modelDef.ModelType);
+                    var sequenceList = dialectProvider.SequenceList(modelDef);
                     if (sequenceList.Count > 0)
                     {
                         foreach (var seq in sequenceList)
                         {
                             if (dialectProvider.DoesSequenceExist(dbCmd, seq) == false)
                             {
-                                var seqSql = dialectProvider.ToCreateSequenceStatement(modelDef.ModelType, seq);
+                                var seqSql = dialectProvider.ToCreateSequenceStatement(modelDef, seq);
                                 dbCmd.ExecuteSql(seqSql);
                             }
                         }
                     }
                     else
                     {
-                        var sequences = dialectProvider.ToCreateSequenceStatements(modelDef.ModelType);
+                        var sequences = dialectProvider.ToCreateSequenceStatements(modelDef);
                         foreach (var seq in sequences)
                         {
                             try
@@ -144,7 +143,7 @@ namespace ServiceStack.OrmLite
                         }
                     }
 
-                    var createTableSql = dialectProvider.ToCreateTableStatement(modelDef.ModelType);
+                    var createTableSql = dialectProvider.ToCreateTableStatement(modelDef);
                     ExecuteSql(dbCmd, createTableSql);
 
                     var postCreateTableSql = dialectProvider.ToPostCreateTableStatement(modelDef);
@@ -158,7 +157,7 @@ namespace ServiceStack.OrmLite
                         ExecuteSql(dbCmd, modelDef.PostCreateTableSql);
                     }
 
-                    var sqlIndexes = dialectProvider.ToCreateIndexStatements(modelDef.ModelType);
+                    var sqlIndexes = dialectProvider.ToCreateIndexStatements(modelDef);
                     foreach (var sqlIndex in sqlIndexes)
                     {
                         try
@@ -196,8 +195,7 @@ namespace ServiceStack.OrmLite
 
         internal static void DropTable<T>(this IDbCommand dbCmd, string tableName = null)
         {
-            ModelDefinition modelDef = ModelDefinition<T>.Definition;
-            if (tableName != null) modelDef.Alias = tableName;
+            ModelDefinition modelDef = typeof(T).GetModelDefinition(tableName);
             DropTable(dbCmd, modelDef);
         }
 

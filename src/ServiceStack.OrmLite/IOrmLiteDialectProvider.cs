@@ -130,7 +130,8 @@ namespace ServiceStack.OrmLite
 
         string ToInsertRowStatement(IDbCommand cmd, object objWithProperties, ICollection<string> insertFields = null);
 
-        void PrepareParameterizedInsertStatement<T>(IDbCommand cmd, ICollection<string> insertFields = null, Func<FieldDefinition,bool> shouldInclude=null);
+        void PrepareParameterizedInsertStatement<T>(IDbCommand cmd, ICollection<string> insertFields = null, Func<FieldDefinition, bool> shouldInclude = null, 
+            string tableName = null);
 
         /// <returns>If had RowVersion</returns>
         bool PrepareParameterizedUpdateStatement<T>(IDbCommand cmd, ICollection<string> updateFields = null);
@@ -184,16 +185,16 @@ namespace ServiceStack.OrmLite
         string ToExecuteProcedureStatement(object objWithProperties);
 
         string ToCreateSchemaStatement(string schema);
-        string ToCreateTableStatement(Type tableType);
+        string ToCreateTableStatement(ModelDefinition modelDef);
         string ToPostCreateTableStatement(ModelDefinition modelDef);
         string ToPostDropTableStatement(ModelDefinition modelDef);
 
-        List<string> ToCreateIndexStatements(Type tableType);
-        List<string> ToCreateSequenceStatements(Type tableType);
-        string ToCreateSequenceStatement(Type tableType, string sequenceName);
+        List<string> ToCreateIndexStatements(ModelDefinition modelDef);
+        List<string> ToCreateSequenceStatements(ModelDefinition modelDef);
+        string ToCreateSequenceStatement(ModelDefinition modelDef, string sequenceName);
 
-        List<string> SequenceList(Type tableType);
-        Task<List<string>> SequenceListAsync(Type tableType, CancellationToken token=default);
+        List<string> SequenceList(ModelDefinition modelDef);
+        Task<List<string>> SequenceListAsync(ModelDefinition modelDef, CancellationToken token=default);
         
         bool DoesSchemaExist(IDbCommand dbCmd, string schema);
         Task<bool> DoesSchemaExistAsync(IDbCommand dbCmd, string schema, CancellationToken token=default);
@@ -206,7 +207,7 @@ namespace ServiceStack.OrmLite
         bool DoesSequenceExist(IDbCommand dbCmd, string sequenceName);
         Task<bool> DoesSequenceExistAsync(IDbCommand dbCmd, string sequenceName, CancellationToken token=default);
 
-        void DropColumn(IDbConnection db, Type modelType, string columnName);
+        void DropColumn(IDbConnection db, ModelDefinition modelDef, string columnName);
 
         object FromDbRowVersion(Type fieldType,  object value);
 
@@ -223,9 +224,9 @@ namespace ServiceStack.OrmLite
         //DDL
         string GetDropForeignKeyConstraints(ModelDefinition modelDef);
 
-        string ToAddColumnStatement(Type modelType, FieldDefinition fieldDef);
-        string ToAlterColumnStatement(Type modelType, FieldDefinition fieldDef);
-        string ToChangeColumnNameStatement(Type modelType, FieldDefinition fieldDef, string oldColumnName);
+        string ToAddColumnStatement(ModelDefinition modelDef, FieldDefinition fieldDef);
+        string ToAlterColumnStatement(ModelDefinition modelDef, FieldDefinition fieldDef);
+        string ToChangeColumnNameStatement(ModelDefinition modelDef, FieldDefinition fieldDef, string oldColumnName);
         string ToAddForeignKeyStatement<T, TForeign>(Expression<Func<T, object>> field,
                                                      Expression<Func<TForeign, object>> foreignField,
                                                      OnFkOption onUpdate,

@@ -23,7 +23,7 @@ namespace ServiceStack.OrmLite
 {
     internal static class OrmLiteConfigExtensions
     {
-        private static Dictionary<Type, ModelDefinition> typeModelDefinitionMap = new Dictionary<Type, ModelDefinition>();
+        private static Dictionary<string, ModelDefinition> typeModelDefinitionMap = new Dictionary<string, ModelDefinition>();
 
         internal static bool CheckForIdField(IEnumerable<PropertyInfo> objProperties)
         {
@@ -38,12 +38,14 @@ namespace ServiceStack.OrmLite
 
         internal static void ClearCache()
         {
-            typeModelDefinitionMap = new Dictionary<Type, ModelDefinition>();
+            // Key is formed by concatenating $"{type.Name}-{alias}";
+            typeModelDefinitionMap = new Dictionary<string, ModelDefinition>();
         }
 
-        internal static ModelDefinition GetModelDefinition(this Type modelType)
-        {                            
-            if (typeModelDefinitionMap.TryGetValue(modelType, out var modelDef))
+        internal static ModelDefinition GetModelDefinition(this Type modelType, string tableName = null)
+        {
+            string cacheKey = tableName == null ? modelType.Name : $"{modelType.Name}-{tableName}";
+            if (typeModelDefinitionMap.TryGetValue(cacheKey, out var modelDef))
                 return modelDef;
 
             if (modelType.IsValueType || modelType == typeof(string))
@@ -231,16 +233,18 @@ namespace ServiceStack.OrmLite
 
             modelDef.AfterInit();
 
-            Dictionary<Type, ModelDefinition> snapshot, newCache;
+            Dictionary<string, ModelDefinition> snapshot, newCache;
             do
             {
                 snapshot = typeModelDefinitionMap;
-                newCache = new Dictionary<Type, ModelDefinition>(typeModelDefinitionMap) { [modelType] = modelDef };
+                newCache = new Dictionary<string, ModelDefinition>(typeModelDefinitionMap) { [cacheKey] = modelDef };
 
             } while (!ReferenceEquals(
                 Interlocked.CompareExchange(ref typeModelDefinitionMap, newCache, snapshot), snapshot));
 
             LicenseUtils.AssertValidUsage(LicenseFeature.OrmLite, QuotaType.Tables, typeModelDefinitionMap.Count);
+
+            modelDef.Alias = tableName;
 
             return modelDef;
         }

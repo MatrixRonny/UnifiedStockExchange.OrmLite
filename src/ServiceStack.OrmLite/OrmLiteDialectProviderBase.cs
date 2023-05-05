@@ -688,12 +688,13 @@ namespace ServiceStack.OrmLite
             return null;
         }
 
-        public virtual void PrepareParameterizedInsertStatement<T>(IDbCommand cmd, ICollection<string> insertFields = null, 
-            Func<FieldDefinition,bool> shouldInclude=null)
+        public virtual void PrepareParameterizedInsertStatement<T>(IDbCommand cmd, ICollection<string> insertFields = null,
+            Func<FieldDefinition, bool> shouldInclude = null, string tableName = null)
         {
             var sbColumnNames = StringBuilderCache.Allocate();
             var sbColumnValues = StringBuilderCacheAlt.Allocate();
-            var modelDef = typeof(T).GetModelDefinition();
+
+            ModelDefinition modelDef = typeof(T).GetModelDefinition(tableName);
 
             cmd.Parameters.Clear();
 
@@ -1310,12 +1311,11 @@ namespace ServiceStack.OrmLite
             return DoesSchemaExist(dbCmd, schema).InTask();
         }
 
-        public virtual string ToCreateTableStatement(Type tableType)
+        public virtual string ToCreateTableStatement(ModelDefinition modelDef)
         {
             var sbColumns = StringBuilderCache.Allocate();
             var sbConstraints = StringBuilderCacheAlt.Allocate();
 
-            var modelDef = tableType.GetModelDefinition();
             foreach (var fieldDef in CreateTableFieldsStrategy(modelDef))
             {
                 if (fieldDef.CustomSelect != null || (fieldDef.IsComputed && !fieldDef.IsPersisted))
@@ -1403,11 +1403,10 @@ namespace ServiceStack.OrmLite
             return !string.IsNullOrEmpty(foreignKey.OnUpdate) ? " ON UPDATE " + foreignKey.OnUpdate : "";
         }
 
-        public virtual List<string> ToCreateIndexStatements(Type tableType)
+        public virtual List<string> ToCreateIndexStatements(ModelDefinition modelDef)
         {
             var sqlIndexes = new List<string>();
 
-            var modelDef = tableType.GetModelDefinition();
             foreach (var fieldDef in modelDef.FieldDefinitions)
             {
                 if (!fieldDef.IsIndexed) continue;
@@ -1521,19 +1520,19 @@ namespace ServiceStack.OrmLite
                    $"({(isCombined ? fieldName : GetQuotedColumnName(fieldName))}); \n";
         }
 
-        public virtual List<string> ToCreateSequenceStatements(Type tableType)
+        public virtual List<string> ToCreateSequenceStatements(ModelDefinition modelDef)
         {
             return new List<string>();
         }
 
-        public virtual string ToCreateSequenceStatement(Type tableType, string sequenceName)
+        public virtual string ToCreateSequenceStatement(ModelDefinition modelDef, string sequenceName)
         {
             return "";
         }
 
-        public virtual List<string> SequenceList(Type tableType) => new List<string>();
+        public virtual List<string> SequenceList(ModelDefinition modelDef) => new List<string>();
 
-        public virtual Task<List<string>> SequenceListAsync(Type tableType, CancellationToken token = default) => new List<string>().InTask();
+        public virtual Task<List<string>> SequenceListAsync(ModelDefinition modelDef, CancellationToken token = default) => new List<string>().InTask();
 
         // TODO : make abstract  ??
         public virtual string ToExistStatement(Type fromTableType,
@@ -1580,22 +1579,22 @@ namespace ServiceStack.OrmLite
             return null;
         }
 
-        public virtual string ToAddColumnStatement(Type modelType, FieldDefinition fieldDef)
+        public virtual string ToAddColumnStatement(ModelDefinition modelDef, FieldDefinition fieldDef)
         {
             var column = GetColumnDefinition(fieldDef);
-            return $"ALTER TABLE {GetQuotedTableName(modelType.GetModelDefinition())} ADD COLUMN {column};";
+            return $"ALTER TABLE {GetQuotedTableName(modelDef)} ADD COLUMN {column};";
         }
 
-        public virtual string ToAlterColumnStatement(Type modelType, FieldDefinition fieldDef)
+        public virtual string ToAlterColumnStatement(ModelDefinition modelDef, FieldDefinition fieldDef)
         {
             var column = GetColumnDefinition(fieldDef);
-            return $"ALTER TABLE {GetQuotedTableName(modelType.GetModelDefinition())} MODIFY COLUMN {column};";
+            return $"ALTER TABLE {GetQuotedTableName(modelDef)} MODIFY COLUMN {column};";
         }
 
-        public virtual string ToChangeColumnNameStatement(Type modelType, FieldDefinition fieldDef, string oldColumnName)
+        public virtual string ToChangeColumnNameStatement(ModelDefinition modelDef, FieldDefinition fieldDef, string oldColumnName)
         {
             var column = GetColumnDefinition(fieldDef);
-            return $"ALTER TABLE {GetQuotedTableName(modelType.GetModelDefinition())} CHANGE COLUMN {GetQuotedColumnName(oldColumnName)} {column};";
+            return $"ALTER TABLE {GetQuotedTableName(modelDef)} CHANGE COLUMN {GetQuotedColumnName(oldColumnName)} {column};";
         }
 
         public virtual string ToAddForeignKeyStatement<T, TForeign>(Expression<Func<T, object>> field,
@@ -1701,17 +1700,17 @@ namespace ServiceStack.OrmLite
             return $"SELECT COUNT(*) FROM ({innerSql}) AS COUNT";
         }
 
-        public virtual void DropColumn(IDbConnection db, Type modelType, string columnName)
+        public virtual void DropColumn(IDbConnection db, ModelDefinition modelDef, string columnName)
         {
             var provider = db.GetDialectProvider();
-            var command = ToDropColumnStatement(modelType, columnName, provider);
+            var command = ToDropColumnStatement(modelDef, columnName, provider);
 
             db.ExecuteSql(command);
         }
 
-        protected virtual string ToDropColumnStatement(Type modelType, string columnName, IOrmLiteDialectProvider provider)
+        protected virtual string ToDropColumnStatement(ModelDefinition modelDef, string columnName, IOrmLiteDialectProvider provider)
         {
-            return $"ALTER TABLE {provider.GetQuotedTableName(modelType.GetModelDefinition())} " +
+            return $"ALTER TABLE {provider.GetQuotedTableName(modelDef)} " +
                    $"DROP COLUMN {provider.GetQuotedColumnName(columnName)};";
         }
         
