@@ -45,7 +45,7 @@ namespace ServiceStack.OrmLite
         {
             InitUserFieldDefinition(modelType, fieldDef);
 
-            var command = dbConn.GetDialectProvider().ToAddColumnStatement(modelType, fieldDef);
+            var command = dbConn.GetDialectProvider().ToAddColumnStatement(modelType.GetModelDefinition(), fieldDef);
             dbConn.ExecuteSql(command);
         }
 
@@ -60,7 +60,7 @@ namespace ServiceStack.OrmLite
         {
             InitUserFieldDefinition(modelType, fieldDef);
 
-            var command = dbConn.GetDialectProvider().ToAlterColumnStatement(modelType, fieldDef);
+            var command = dbConn.GetDialectProvider().ToAlterColumnStatement(modelType.GetModelDefinition(), fieldDef);
             dbConn.ExecuteSql(command);
         }
 
@@ -78,7 +78,7 @@ namespace ServiceStack.OrmLite
             FieldDefinition fieldDef,
             string oldColumnName)
         {
-            var command = dbConn.GetDialectProvider().ToChangeColumnNameStatement(modelType, fieldDef, oldColumnName);
+            var command = dbConn.GetDialectProvider().ToChangeColumnNameStatement(modelType.GetModelDefinition(), fieldDef, oldColumnName);
             dbConn.ExecuteSql(command);
         }
 
@@ -96,7 +96,7 @@ namespace ServiceStack.OrmLite
 
         public static void DropColumn(this IDbConnection dbConn, Type modelType, string columnName)
         {
-            dbConn.GetDialectProvider().DropColumn(dbConn, modelType, columnName);
+            dbConn.GetDialectProvider().DropColumn(dbConn, modelType.GetModelDefinition(), columnName);
         }
 
         public static void AddForeignKey<T, TForeign>(this IDbConnection dbConn,
