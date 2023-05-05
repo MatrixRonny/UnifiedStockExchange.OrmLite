@@ -159,9 +159,9 @@ namespace ServiceStack.OrmLite
         /// <para>db.CreateTable&lt;Person&gt;(overwrite=false) //default</para> 
         /// <para>db.CreateTable&lt;Person&gt;(overwrite=true)</para> 
         /// </summary>
-        public static void CreateTable<T>(this IDbConnection dbConn, bool overwrite = false)
+        public static void CreateTable<T>(this IDbConnection dbConn, string tableName = null, bool overwrite = false)
         {
-            dbConn.Exec(dbCmd => dbCmd.CreateTable<T>(overwrite));
+            dbConn.Exec(dbCmd => dbCmd.CreateTable<T>(tableName, overwrite));
         }
 
         /// <summary>
@@ -188,7 +188,7 @@ namespace ServiceStack.OrmLite
         /// </summary>
         public static void DropAndCreateTable<T>(this IDbConnection dbConn)
         {
-            dbConn.Exec(dbCmd => dbCmd.CreateTable<T>(true));
+            dbConn.Exec(dbCmd => dbCmd.CreateTable<T>(overwrite: true));
         }
 
         /// <summary>
@@ -222,9 +222,9 @@ namespace ServiceStack.OrmLite
         /// Drop any existing tables from the generic type. E.g:
         /// <para>db.DropTable&lt;Person&gt;()</para> 
         /// </summary>
-        public static void DropTable<T>(this IDbConnection dbConn)
+        public static void DropTable<T>(this IDbConnection dbConn, string tableName = null)
         {
-            dbConn.Exec(dbCmd => dbCmd.DropTable<T>());
+            dbConn.Exec(dbCmd => dbCmd.DropTable<T>(tableName));
         }
     }
 }

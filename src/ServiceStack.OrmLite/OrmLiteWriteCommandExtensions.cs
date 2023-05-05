@@ -68,16 +68,21 @@ namespace ServiceStack.OrmLite
             }
         }
 
-        internal static bool CreateTable<T>(this IDbCommand dbCmd, bool overwrite = false)
+        internal static bool CreateTable<T>(this IDbCommand dbCmd, string tableName = null, bool overwrite = false)
         {
             var tableType = typeof(T);
-            return CreateTable(dbCmd, overwrite, tableType);
+            ModelDefinition modelDef = tableType.GetModelDefinition();
+            if (tableName != null) modelDef.Alias = tableName;
+            return CreateTable(dbCmd, overwrite, modelDef);
         }
 
         internal static bool CreateTable(this IDbCommand dbCmd, bool overwrite, Type modelType)
         {
-            var modelDef = modelType.GetModelDefinition();
+            return CreateTable(dbCmd, overwrite, modelType.GetModelDefinition());
+        }
 
+        internal static bool CreateTable(this IDbCommand dbCmd, bool overwrite, ModelDefinition modelDef)
+        {
             var dialectProvider = dbCmd.GetDialectProvider();
             var tableName = dialectProvider.NamingStrategy.GetTableName(modelDef);
             var schema = dialectProvider.NamingStrategy.GetSchemaName(modelDef);
@@ -105,21 +110,21 @@ namespace ServiceStack.OrmLite
                     }
 
                     // sequences must be created before tables
-                    var sequenceList = dialectProvider.SequenceList(modelType);
+                    var sequenceList = dialectProvider.SequenceList(modelDef.ModelType);
                     if (sequenceList.Count > 0)
                     {
                         foreach (var seq in sequenceList)
                         {
                             if (dialectProvider.DoesSequenceExist(dbCmd, seq) == false)
                             {
-                                var seqSql = dialectProvider.ToCreateSequenceStatement(modelType, seq);
+                                var seqSql = dialectProvider.ToCreateSequenceStatement(modelDef.ModelType, seq);
                                 dbCmd.ExecuteSql(seqSql);
                             }
                         }
                     }
                     else
                     {
-                        var sequences = dialectProvider.ToCreateSequenceStatements(modelType);
+                        var sequences = dialectProvider.ToCreateSequenceStatements(modelDef.ModelType);
                         foreach (var seq in sequences)
                         {
                             try
@@ -139,7 +144,7 @@ namespace ServiceStack.OrmLite
                         }
                     }
 
-                    var createTableSql = dialectProvider.ToCreateTableStatement(modelType);
+                    var createTableSql = dialectProvider.ToCreateTableStatement(modelDef.ModelType);
                     ExecuteSql(dbCmd, createTableSql);
 
                     var postCreateTableSql = dialectProvider.ToPostCreateTableStatement(modelDef);
@@ -153,7 +158,7 @@ namespace ServiceStack.OrmLite
                         ExecuteSql(dbCmd, modelDef.PostCreateTableSql);
                     }
 
-                    var sqlIndexes = dialectProvider.ToCreateIndexStatements(modelType);
+                    var sqlIndexes = dialectProvider.ToCreateIndexStatements(modelDef.ModelType);
                     foreach (var sqlIndex in sqlIndexes)
                     {
                         try
@@ -189,9 +194,11 @@ namespace ServiceStack.OrmLite
             return false;
         }
 
-        internal static void DropTable<T>(this IDbCommand dbCmd)
+        internal static void DropTable<T>(this IDbCommand dbCmd, string tableName = null)
         {
-            DropTable(dbCmd, ModelDefinition<T>.Definition);
+            ModelDefinition modelDef = ModelDefinition<T>.Definition;
+            if (tableName != null) modelDef.Alias = tableName;
+            DropTable(dbCmd, modelDef);
         }
 
         internal static void DropTable(this IDbCommand dbCmd, Type modelType)
