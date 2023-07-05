@@ -83,6 +83,10 @@ namespace ServiceStack.OrmLite.Sqlite.Converters
     /// </summary>
     public class SqliteCoreDateTimeConverter : SqliteNativeDateTimeConverter
     {
+        public override string ColumnDefinition => "REAL";
+
+        public override DbType DbType => DbType.Double;
+
         public override object ToDbValue(Type fieldType, object value)
         {
             var dateTime = (DateTime)value;
@@ -108,12 +112,29 @@ namespace ServiceStack.OrmLite.Sqlite.Converters
                 dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Unspecified);
             }
 
-            return dateTime;
+            // Convert to Julian Calendar days.
+            return (dateTime.AddYears(4714).AddMonths(11).AddDays(24).AddHours(12) - new DateTime()).TotalDays;
         }
 
         public override object FromDbValue(Type fieldType, object value)
         {
-            var dateTime = (DateTime)value;
+            DateTime dateTime;
+            if (value is string dateStr)
+            {
+                dateTime = DateTime.Parse(dateStr);
+            }
+            else if (value is int unixTime)
+            {
+                dateTime = new DateTime(1970, 1, 1, 0, 0, 0).AddSeconds(unixTime);
+            }
+            else if (value is double julianDays)
+            {
+                dateTime = new DateTime().AddDays(julianDays).AddYears(-4714).AddMonths(-11).AddDays(-24).AddHours(-12);
+            }
+            else
+            {
+                throw new NotImplementedException("Unexpected SQLite type for storing date.");
+            }
 
             if (DateStyle == DateTimeKind.Utc)
             {
@@ -137,51 +158,57 @@ namespace ServiceStack.OrmLite.Sqlite.Converters
 
         public override object GetValue(IDataReader reader, int columnIndex, object[] values)
         {
-            var ret = base.GetValue(reader, columnIndex, values);
-            return ret;
+            //INFO: Copied from OrmLiteConverter.
+
+            var value = values != null
+                ? values[columnIndex]
+                : reader.GetValue(columnIndex);
+
+            return value == DBNull.Value ? null : value;
         }
     }
 
-    public class SqliteDataDateTimeConverter : SqliteCoreDateTimeConverter
-    {
-        public override object FromDbValue(Type fieldType, object value)
-        {
-            var dateTime = (DateTime)value;
+    //REMOVE: 2023-07-05
+    //public class SqliteDataDateTimeConverter : SqliteCoreDateTimeConverter
+    //{
+    //    public override object FromDbValue(Type fieldType, object value)
+    //    {
+    //        var dateTime = (DateTime)value;
 
-            if (DateStyle == DateTimeKind.Utc)
-            {
-                //.NET Core returns correct Local time but as Unspecified so change to Local and Convert to UTC
-                dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc); // don't convert
-            }
+    //        if (DateStyle == DateTimeKind.Utc)
+    //        {
+    //            //.NET Core returns correct Local time but as Unspecified so change to Local and Convert to UTC
+    //            dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc); // don't convert
+    //        }
 
-            if (DateStyle == DateTimeKind.Local && dateTime.Kind != DateTimeKind.Local)
-            {
-                dateTime = dateTime.Kind == DateTimeKind.Utc
-                    ? dateTime.ToLocalTime()
-                    : DateTime.SpecifyKind(dateTime, DateTimeKind.Local);
-            }
+    //        if (DateStyle == DateTimeKind.Local && dateTime.Kind != DateTimeKind.Local)
+    //        {
+    //            dateTime = dateTime.Kind == DateTimeKind.Utc
+    //                ? dateTime.ToLocalTime()
+    //                : DateTime.SpecifyKind(dateTime, DateTimeKind.Local);
+    //        }
 
-            return dateTime;
-        }
-    }
+    //        return dateTime;
+    //    }
+    //}
 
-    public class SqliteWindowsDateTimeConverter : SqliteNativeDateTimeConverter
-    {
-        public override object FromDbValue(Type fieldType, object value)
-        {
-            var dateTime = (DateTime)value;
+    //public class SqliteWindowsDateTimeConverter : SqliteNativeDateTimeConverter
+    //{
+    //    public override object FromDbValue(Type fieldType, object value)
+    //    {
+    //        var dateTime = (DateTime)value;
 
-            if (DateStyle == DateTimeKind.Utc)
-                dateTime = dateTime.ToUniversalTime();
+    //        if (DateStyle == DateTimeKind.Utc)
+    //            dateTime = dateTime.ToUniversalTime();
 
-            if (DateStyle == DateTimeKind.Local && dateTime.Kind != DateTimeKind.Local)
-            {
-                dateTime = dateTime.Kind == DateTimeKind.Utc
-                    ? dateTime.ToLocalTime()
-                    : DateTime.SpecifyKind(dateTime, DateTimeKind.Local);
-            }
+    //        if (DateStyle == DateTimeKind.Local && dateTime.Kind != DateTimeKind.Local)
+    //        {
+    //            dateTime = dateTime.Kind == DateTimeKind.Utc
+    //                ? dateTime.ToLocalTime()
+    //                : DateTime.SpecifyKind(dateTime, DateTimeKind.Local);
+    //        }
 
-            return dateTime;
-        }
-    }
+    //        return dateTime;
+    //    }
+    //}
 }
