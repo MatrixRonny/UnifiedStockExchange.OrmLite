@@ -83,6 +83,16 @@ namespace ServiceStack.OrmLite.Sqlite.Converters
     /// </summary>
     public class SqliteCoreDateTimeConverter : SqliteNativeDateTimeConverter
     {
+        private static double ToJulianDay(DateTime date)
+        {
+            return date.ToOADate() + 2415018.5;
+        }
+
+        private static DateTime FromJulianDay(double julianDay)
+        {
+            return DateTime.FromOADate(julianDay - 2415018.5);
+        }
+
         public override string ColumnDefinition => "REAL";
 
         public override DbType DbType => DbType.Double;
@@ -113,7 +123,7 @@ namespace ServiceStack.OrmLite.Sqlite.Converters
             }
 
             // Convert to Julian Calendar days.
-            return (dateTime.AddYears(4714).AddMonths(11).AddDays(24).AddHours(12) - new DateTime()).TotalDays;
+            return ToJulianDay(dateTime);
         }
 
         public override object FromDbValue(Type fieldType, object value)
@@ -127,9 +137,9 @@ namespace ServiceStack.OrmLite.Sqlite.Converters
             {
                 dateTime = new DateTime(1970, 1, 1, 0, 0, 0).AddSeconds(unixTime);
             }
-            else if (value is double julianDays)
+            else if (value is double julianDay)
             {
-                dateTime = new DateTime().AddDays(julianDays).AddYears(-4714).AddMonths(-11).AddDays(-24).AddHours(-12);
+                dateTime = FromJulianDay(julianDay);
             }
             else
             {
