@@ -72,7 +72,8 @@ namespace ServiceStack.OrmLite.DataAccess
                 sqlCmd.Parameters.Add(dbParam);
             }
 
-            return sqlCmd.ExecuteReader().ConvertToList<T>(_sqlExpression.DialectProvider);
+            using IDataReader reader = sqlCmd.ExecuteReader();
+            return reader.ConvertToList<T>(_sqlExpression.DialectProvider);
         }
     }
 }
