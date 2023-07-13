@@ -17,15 +17,10 @@ namespace ServiceStack.OrmLite.DataAccess
             _sqlExpression.ModelDef.Alias = tableName;
         }
 
-        private DeleteFilter(SqlExpression<T> sqlExpression, IDbConnection connection)
-        {
-            _sqlExpression = sqlExpression;
-            _connection = connection;
-        }
-
         public DeleteFilter<T> Where(Expression<Func<T, bool>> predicate)
         {
-            return new DeleteFilter<T>(_sqlExpression.Where(predicate), _connection);
+            _sqlExpression.Where(predicate);
+            return this;
         }
 
         public void ExecuteDelete()
