@@ -17,40 +17,40 @@ namespace ServiceStack.OrmLite.DataAccess
             _sqlExpression = _connection.From<T>(tableName);
         }
 
-        private SelectFilter(SqlExpression<T> sqlExpression, IDbConnection connection)
-        {
-            _sqlExpression = sqlExpression;
-            _connection = connection;
-        }
-
         public SelectFilter<T> Where(Expression<Func<T, bool>> predicate)
         {
-            return new SelectFilter<T>(_sqlExpression.Where(predicate), _connection);
+            _sqlExpression.Where(predicate);
+            return this;
         }
 
         public SelectFilter<T> OrderBy(Expression<Func<T, object>> selector)
         {
-            return new SelectFilter<T>(_sqlExpression.OrderBy(selector), _connection);
+            _sqlExpression.OrderBy(selector);
+            return this;
         }
 
         public SelectFilter<T> ThenOrderBy(Expression<Func<T, object>> selector)
         {
-            return new SelectFilter<T>(_sqlExpression.ThenBy(selector), _connection);
+            _sqlExpression.ThenBy(selector);
+            return this;
         }
 
         public SelectFilter<T> Distinct(Expression<Func<T, object>> selector)
         {
-            return new SelectFilter<T>(_sqlExpression.SelectDistinct(selector), _connection);
+            _sqlExpression.SelectDistinct(selector);
+            return this;
         }
 
         public SelectFilter<T> Skip(int count)
         {
-            return new SelectFilter<T>(_sqlExpression.Skip(count), _connection);
+            _sqlExpression.Skip(count);
+            return this;
         }
 
         public SelectFilter<T> Take(int count)
         {
-            return new SelectFilter<T>(_sqlExpression.Take(count), _connection);
+            _sqlExpression.Take(count);
+            return this;
         }
 
         public IList<T> ExecuteSelect()

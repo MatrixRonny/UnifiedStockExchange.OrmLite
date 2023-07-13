@@ -18,15 +18,10 @@ namespace ServiceStack.OrmLite.DataAccess
             _sqlExpression.ModelDef.Alias = tableName;
         }
 
-        private UpdateFilter(SqlExpression<T> sqlExpression, IDbConnection connection)
-        {
-            _sqlExpression = sqlExpression;
-            _connection = connection;
-        }
-
         public UpdateFilter<T> Where(Expression<Func<T, bool>> predicate)
         {
-            return new UpdateFilter<T>(_sqlExpression.Where(predicate), _connection);
+            _sqlExpression.Where(predicate);
+            return this;
         }
 
         public void ExecuteUpdate(T entity)
