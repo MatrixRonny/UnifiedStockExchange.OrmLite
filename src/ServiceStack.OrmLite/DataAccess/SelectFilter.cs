@@ -29,6 +29,12 @@ namespace ServiceStack.OrmLite.DataAccess
             return this;
         }
 
+        public SelectFilter<T> OrderByDescending(Expression<Func<T, object>> selector)
+        {
+            _sqlExpression.OrderByDescending(selector);
+            return this;
+        }
+
         public SelectFilter<T> ThenOrderBy(Expression<Func<T, object>> selector)
         {
             _sqlExpression.ThenBy(selector);
