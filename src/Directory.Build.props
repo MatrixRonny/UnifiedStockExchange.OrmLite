@@ -44,10 +44,6 @@
     <DefineConstants>$(DefineConstants);NETCORE;NETCORE_SUPPORT</DefineConstants>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
-  </ItemGroup>
-
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DefineConstants>DEBUG</DefineConstants>
   </PropertyGroup>
