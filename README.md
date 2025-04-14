@@ -34,4 +34,13 @@ Project `ServiceStack.OrmLite` is the existing core project and it uses `IOrmLit
 
 This project has been adjusted expose `string tableName` present in `IOrmLiteDialectProvider` interface to `OrmLiteWriteCommandExtensions` and `TableDataAccess` implementation. The latter was added in this fork and is recommended for use because the syntax is more consistents across mehtod calls.
 
-The class `TableDataAccess` intends to replicate the dotnet built-in [DbSet](https://learn.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.dbset-1) class, but with support for custom table names and multiple sets per table.
+The class `TableDataAccess` intends to replicate the dotnet [DbSet](https://learn.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.dbset-1) class, but with support for custom table names and multiple tables per type.
+
+### Development heads-up
+
+Common code refactorings
+* `new OrmLiteConn(DbFactory);` => `DbFactory.CreateDbConnection()`
+* `dbFactory.Open()` => `dbFactory.OpenDbConnection()`
+* `new SqliteConnection(connectionString)` => `new SQLiteConnection(connectionString)`
+* Missing final argument `string tableName = null` in overriden method
+* `ToCreateTableStatement(typeof(ModelWithIdAndName))` => `ModelDefinition.CreateInstance<ModelWithIdAndName>()`
