@@ -51,3 +51,9 @@ Common code refactorings
 
 Dealing with failing tests
 * For now, make sure at least 70% of the tests pass when compiling for dotnet.
+
+### When everything fails
+
+Clean solution, close VS2022 / VsCode, delete bin and obj folders. Also, consider deleting `.vs` hidden folder found at the root. As a last resort, commit everything into a temporary branch, delete and clone repo again. I'm recommending this because the degree of legacy code and lack of dependency strategy makes compilation become unstable from time to time.
+
+In Windows, bin and obj folders can be found with `filename:=bin OR filename:=obj` pattern. In Linux, I'm sure everyone knows to do it :)
