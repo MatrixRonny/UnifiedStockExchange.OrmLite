@@ -1,3 +1,8 @@
+using Oracle.ManagedDataAccess.Client;
+using ServiceStack.DataAnnotations;
+using ServiceStack.OrmLite.Converters;
+using ServiceStack.OrmLite.Oracle.Converters;
+using ServiceStack.Text;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -7,11 +12,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using Oracle.ManagedDataAccess.Client;
-using ServiceStack.DataAnnotations;
-using ServiceStack.OrmLite.Converters;
-using ServiceStack.OrmLite.Oracle.Converters;
-using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite.Oracle
 {
@@ -20,7 +20,7 @@ namespace ServiceStack.OrmLite.Oracle
         public const string ManagedProvider = "Oracle.ManagedDataAccess.Client";
         public string AutoIdGuidFunction { get; set; } = "SYS_GUID()";
         public bool UseReturningForLastInsertId { get; set; } = true;
-        
+
         public static readonly OracleOrmLiteDialectProvider Instance = new OracleOrmLiteDialectProvider();
         public static string RowVersionTriggerFormat = "{0}RowVersionUpdateTrigger";
 
@@ -76,7 +76,7 @@ namespace ServiceStack.OrmLite.Oracle
             AutoIncrementDefinition = string.Empty;
 
             ParamString = ":";
-            
+
             NamingStrategy = new OracleNamingStrategy(MaxNameLength);
             ExecFilter = new OracleExecFilter();
 
@@ -97,7 +97,7 @@ namespace ServiceStack.OrmLite.Oracle
             //OracleConfiguration.TcpNoDelay = true;
             OracleConfiguration.TraceFileLocation = "c:\\temp\\ora";
 #endif
-            
+
             _timestampConverter = new OracleTimestampConverter(_factory.GetType(), clientProvider);
 
             InitColumnTypeMap();
@@ -134,8 +134,8 @@ namespace ServiceStack.OrmLite.Oracle
                 { OrmLiteVariables.SystemUtc, "sys_extract_utc(systimestamp)" },
                 { OrmLiteVariables.MaxText, $"VARCHAR2({MaxStringColumnLength})" },
                 { OrmLiteVariables.MaxTextUnicode, $"NVARCHAR2({MaxStringColumnLength / 2})" },
-                { OrmLiteVariables.True, SqlBool(true) },                
-                { OrmLiteVariables.False, SqlBool(false) },                
+                { OrmLiteVariables.True, SqlBool(true) },
+                { OrmLiteVariables.False, SqlBool(false) },
             };
         }
 
@@ -244,7 +244,7 @@ namespace ServiceStack.OrmLite.Oracle
             var isStartOfDay = timeOfDay.Ticks == 0;
             if (isStartOfDay) return dateFormat;
             var hasFractionalSeconds = (timeOfDay.Milliseconds != 0) || ((timeOfDay.Ticks % TimeSpan.TicksPerMillisecond) != 0);
-            return hasFractionalSeconds 
+            return hasFractionalSeconds
                 ? $"{dateFormat} {timeFormat}.{millisecondFormat}"
                 : $"{dateFormat} {timeFormat}";
         }
@@ -288,8 +288,8 @@ namespace ServiceStack.OrmLite.Oracle
             return StringBuilderCache.ReturnAndFree(sql);
         }
 
-        public override void PrepareParameterizedInsertStatement<T>(IDbCommand dbCommand, ICollection<string> insertFields = null, 
-            Func<FieldDefinition,bool> shouldInclude=null)
+        public override void PrepareParameterizedInsertStatement<T>(IDbCommand dbCommand, ICollection<string> insertFields = null,
+            Func<FieldDefinition, bool> shouldInclude = null, string tableName = null)
         {
             var sbColumnNames = StringBuilderCache.Allocate();
             var sbColumnValues = StringBuilderCacheAlt.Allocate();
@@ -302,7 +302,7 @@ namespace ServiceStack.OrmLite.Oracle
             foreach (var fieldDef in fieldDefs)
             {
                 if (((fieldDef.IsComputed && !fieldDef.IsPersisted) || fieldDef.IsRowVersion)
-                    && shouldInclude?.Invoke(fieldDef) != true) 
+                    && shouldInclude?.Invoke(fieldDef) != true)
                     continue;
 
                 if (sbColumnNames.Length > 0) sbColumnNames.Append(",");
@@ -311,7 +311,7 @@ namespace ServiceStack.OrmLite.Oracle
                 try
                 {
                     sbColumnNames.Append(GetQuotedColumnName(fieldDef.FieldName));
-                    sbColumnValues.Append(this.GetParam(SanitizeFieldNameForParamName(fieldDef.FieldName),fieldDef.CustomInsert));
+                    sbColumnValues.Append(this.GetParam(SanitizeFieldNameForParamName(fieldDef.FieldName), fieldDef.CustomInsert));
 
                     AddParameter(dbCommand, fieldDef);
                 }
@@ -323,8 +323,8 @@ namespace ServiceStack.OrmLite.Oracle
             }
 
             dbCommand.CommandText = string.Format("INSERT INTO {0} ({1}) VALUES ({2})",
-                GetQuotedTableName(modelDef), 
-                StringBuilderCache.ReturnAndFree(sbColumnNames), 
+                GetQuotedTableName(modelDef),
+                StringBuilderCache.ReturnAndFree(sbColumnNames),
                 StringBuilderCacheAlt.ReturnAndFree(sbColumnValues));
         }
 
@@ -432,8 +432,8 @@ namespace ServiceStack.OrmLite.Oracle
             }
 
             var sql = string.Format("INSERT INTO {0} ({1}) VALUES ({2}) ",
-                GetQuotedTableName(modelDef), 
-                StringBuilderCache.ReturnAndFree(sbColumnNames), 
+                GetQuotedTableName(modelDef),
+                StringBuilderCache.ReturnAndFree(sbColumnNames),
                 StringBuilderCacheAlt.ReturnAndFree(sbColumnValues));
 
             return sql;
@@ -448,7 +448,7 @@ namespace ServiceStack.OrmLite.Oracle
 
             foreach (var fieldDef in modelDef.FieldDefinitions)
             {
-                if ((fieldDef.IsComputed && !fieldDef.IsPersisted)) 
+                if ((fieldDef.IsComputed && !fieldDef.IsPersisted))
                     continue;
 
                 var updateFieldsEmptyOrNull = updateFields == null || updateFields.Count == 0;
@@ -480,19 +480,18 @@ namespace ServiceStack.OrmLite.Oracle
 
             var strFilter = StringBuilderCacheAlt.ReturnAndFree(sqlFilter);
             dbCmd.CommandText = string.Format("UPDATE {0} \nSET {1} {2}",
-                GetQuotedTableName(modelDef), 
+                GetQuotedTableName(modelDef),
                 StringBuilderCache.ReturnAndFree(sql),
                 strFilter.Length > 0 ? "\nWHERE " + strFilter : "");
         }
 
-        public override string ToCreateTableStatement(Type tableType)
+        public override string ToCreateTableStatement(ModelDefinition modelDef)
         {
             var sbColumns = StringBuilderCache.Allocate();
             var sbConstraints = StringBuilderCacheAlt.Allocate();
 
             var sbPk = new StringBuilder();
 
-            var modelDef = GetModel(tableType);
             foreach (var fieldDef in CreateTableFieldsStrategy(modelDef))
             {
                 if (fieldDef.CustomSelect != null || (fieldDef.IsComputed && !fieldDef.IsPersisted))
@@ -532,8 +531,8 @@ namespace ServiceStack.OrmLite.Oracle
             }
 
             var sql = string.Format(
-                "CREATE TABLE {0} \n(\n  {1}{2} \n) \n", GetQuotedTableName(modelDef), 
-                StringBuilderCache.ReturnAndFree(sbColumns), 
+                "CREATE TABLE {0} \n(\n  {1}{2} \n) \n", GetQuotedTableName(modelDef),
+                StringBuilderCache.ReturnAndFree(sbColumns),
                 StringBuilderCacheAlt.ReturnAndFree(sbConstraints));
 
             return sql;
@@ -563,10 +562,9 @@ namespace ServiceStack.OrmLite.Oracle
             return base.GetLoadChildrenSubSelect(expr);
         }
 
-        public override string ToCreateSequenceStatement(Type tableType, string sequenceName)
+        public override string ToCreateSequenceStatement(ModelDefinition modelDef, string sequenceName)
         {
             var result = "";
-            var modelDef = GetModel(tableType);
 
             foreach (var fieldDef in modelDef.FieldDefinitions)
             {
@@ -583,15 +581,14 @@ namespace ServiceStack.OrmLite.Oracle
             return result;
         }
 
-        public override List<string> ToCreateSequenceStatements(Type tableType)
+        public override List<string> ToCreateSequenceStatements(ModelDefinition modelDef)
         {
-            return SequenceList(tableType).Select(seq => "CREATE SEQUENCE " + GetQuotedName(seq)).ToList();
+            return SequenceList(modelDef).Select(seq => "CREATE SEQUENCE " + GetQuotedName(seq)).ToList();
         }
 
-        public override List<string> SequenceList(Type tableType)
+        public override List<string> SequenceList(ModelDefinition modelDef)
         {
             var gens = new List<string>();
-            var modelDef = GetModel(tableType);
 
             foreach (var fieldDef in modelDef.FieldDefinitions)
             {
@@ -608,7 +605,7 @@ namespace ServiceStack.OrmLite.Oracle
 
         public override string GetColumnDefinition(FieldDefinition fieldDef)
         {
-            var fieldDefinition = ResolveFragment(fieldDef.CustomFieldDefinition) 
+            var fieldDefinition = ResolveFragment(fieldDef.CustomFieldDefinition)
                 ?? GetColumnTypeDefinition(fieldDef.FieldType, fieldDef.FieldLength, fieldDef.Scale);
 
             var sql = StringBuilderCache.Allocate();
@@ -642,11 +639,10 @@ namespace ServiceStack.OrmLite.Oracle
                 : null;
         }
 
-        public override List<string> ToCreateIndexStatements(Type tableType)
+        public override List<string> ToCreateIndexStatements(ModelDefinition modelDef)
         {
             var sqlIndexes = new List<string>();
 
-            var modelDef = GetModel(tableType);
             foreach (var fieldDef in modelDef.FieldDefinitions)
             {
                 if (!fieldDef.IsIndexed) continue;
@@ -670,7 +666,7 @@ namespace ServiceStack.OrmLite.Oracle
                 var indexNames = string.Join(",", compositeIndex.FieldNames.ToArray());
 
                 sqlIndexes.Add(
-                    ToCreateIndexStatement(compositeIndex.Unique, indexName, modelDef, indexNames, isCombined:true));
+                    ToCreateIndexStatement(compositeIndex.Unique, indexName, modelDef, indexNames, isCombined: true));
             }
 
             return sqlIndexes;
@@ -709,9 +705,9 @@ namespace ServiceStack.OrmLite.Oracle
 
                     foreach (var fieldDef in fromModelDef.FieldDefinitions)
                     {
-                        if (fieldDef.IsComputed) 
+                        if (fieldDef.IsComputed)
                             continue;
-                        
+
                         if (fieldDef.ForeignKey != null
                             && GetModel(fieldDef.ForeignKey.ReferenceType).ModelName == modelDef.ModelName)
                         {
@@ -727,9 +723,9 @@ namespace ServiceStack.OrmLite.Oracle
                     var modelDef = GetModel(tableType);
                     foreach (var fieldDef in modelDef.FieldDefinitions)
                     {
-                        if (fieldDef.IsComputed) 
+                        if (fieldDef.IsComputed)
                             continue;
-                        
+
                         if (fieldDef.IsPrimaryKey)
                         {
                             if (filter.Length > 0) filter.Append(" AND ");
@@ -842,7 +838,7 @@ namespace ServiceStack.OrmLite.Oracle
 
             return "; " + SelectIdentitySql;
         }
-        
+
         private object GetNextValue(IDbCommand dbCmd, string sequence, object value)
         {
             if (value.ToString() != "0")
@@ -893,9 +889,9 @@ namespace ServiceStack.OrmLite.Oracle
             return Quote(NamingStrategy.GetTableName(modelDef));
         }
 
-        public override string GetQuotedTableName(string tableName, string schema=null)
+        public override string GetQuotedTableName(string tableName, string schema = null)
         {
-            return schema == null 
+            return schema == null
                 ? Quote(NamingStrategy.GetTableName(tableName))
                 : Quote(NamingStrategy.GetSchemaName(schema))
                   + "."
@@ -938,7 +934,7 @@ namespace ServiceStack.OrmLite.Oracle
         {
             return _factory.CreateParameter();
         }
-        
+
         public override bool DoesSchemaExist(IDbCommand dbCmd, string schemaName)
         {
             dbCmd.CommandText = $"SELECT 1 FROM sys.schemas WHERE name = {schemaName.Quoted()}";
@@ -952,9 +948,9 @@ namespace ServiceStack.OrmLite.Oracle
             return sql;
         }
 
-        public override string ToAddColumnStatement(Type modelType, FieldDefinition fieldDef)
+        public override string ToAddColumnStatement(ModelDefinition modelDef, FieldDefinition fieldDef)
         {
-            var command = base.ToAddColumnStatement(modelType, fieldDef);
+            var command = base.ToAddColumnStatement(modelDef, fieldDef);
 
             command = RemoveTerminatingSemicolon(command);
 
@@ -970,14 +966,14 @@ namespace ServiceStack.OrmLite.Oracle
             return command;
         }
 
-        protected override string ToDropColumnStatement(Type modelType, string columnName, IOrmLiteDialectProvider provider)
+        protected override string ToDropColumnStatement(ModelDefinition modelDef, string columnName, IOrmLiteDialectProvider provider)
         {
-            var command = base.ToDropColumnStatement(modelType, columnName, provider);
+            var command = base.ToDropColumnStatement(modelDef, columnName, provider);
 
             return RemoveTerminatingSemicolon(command);
         }
 
-        public override bool DoesTableExist(IDbCommand dbCmd, string tableName, string schema=null)
+        public override bool DoesTableExist(IDbCommand dbCmd, string tableName, string schema = null)
         {
             if (!WillQuote(tableName)) tableName = tableName.ToUpper();
 
@@ -1066,7 +1062,7 @@ namespace ServiceStack.OrmLite.Oracle
             string orderByExpression = null,
             int? offset = null,
             int? rows = null,
-            ISet<string> tags=null)
+            ISet<string> tags = null)
         {
             var sbInner = StringBuilderCache.Allocate();
             ApplyTags(sbInner, tags);
@@ -1131,7 +1127,7 @@ namespace ServiceStack.OrmLite.Oracle
         public override string SqlConcat(IEnumerable<object> args) => string.Join(" || ", args);
 
         public override string SqlRandom => "dbms_random.value";
-        
+
         protected OracleConnection Unwrap(IDbConnection db)
         {
             return (OracleConnection)db.ToDbConnection();

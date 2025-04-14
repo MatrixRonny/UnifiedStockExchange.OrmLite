@@ -1,6 +1,6 @@
-﻿using System;
+﻿using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
-using ServiceStack.DataAnnotations;
+using System;
 
 namespace ServiceStack.OrmLite.SqlServer
 {
@@ -92,16 +92,15 @@ namespace ServiceStack.OrmLite.SqlServer
             return StringBuilderCache.ReturnAndFree(sql);
         }
 
-        public override string ToCreateTableStatement(Type tableType)
+        public override string ToCreateTableStatement(ModelDefinition modelDef)
         {
             var sbColumns = StringBuilderCache.Allocate();
             var sbConstraints = StringBuilderCacheAlt.Allocate();
             var sbTableOptions = StringBuilderCacheAlt.Allocate();
 
+            Type tableType = modelDef.ModelType;
             var fileTableAttrib = tableType.FirstAttribute<SqlServerFileTableAttribute>();
             var memoryTableAttrib = tableType.FirstAttribute<SqlServerMemoryOptimizedAttribute>();
-
-            var modelDef = GetModel(tableType);
 
             if (fileTableAttrib == null)
             {
@@ -118,7 +117,7 @@ namespace ServiceStack.OrmLite.SqlServer
                         sbColumns.Append(", \n  ");
 
                     sbColumns.Append(columnDefinition);
-                    
+
                     var sqlConstraint = GetCheckConstraint(modelDef, fieldDef);
                     if (sqlConstraint != null)
                     {
@@ -166,12 +165,12 @@ namespace ServiceStack.OrmLite.SqlServer
                     if (hasFileTableCollateFileName)
                     {
                         if (hasFileTableDir) sbTableOptions.Append(" ,");
-                        sbTableOptions.Append($" FILETABLE_COLLATE_FILENAME = {fileTableAttrib.FileTableCollateFileName ?? "database_default" }\n");
+                        sbTableOptions.Append($" FILETABLE_COLLATE_FILENAME = {fileTableAttrib.FileTableCollateFileName ?? "database_default"}\n");
                     }
                     sbTableOptions.Append(")");
                 }
             }
-            
+
             var uniqueConstraints = GetUniqueConstraints(modelDef);
             if (uniqueConstraints != null)
             {

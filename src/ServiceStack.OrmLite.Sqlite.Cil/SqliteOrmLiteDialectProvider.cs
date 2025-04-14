@@ -1,5 +1,4 @@
-﻿using Microsoft.Data.Sqlite;
-using ServiceStack.OrmLite.Sqlite.Converters;
+﻿using ServiceStack.OrmLite.Sqlite.Converters;
 using System;
 using System.Data;
 using System.Data.SQLite;
@@ -28,7 +27,7 @@ namespace ServiceStack.OrmLite.Sqlite
 
         public override IDbDataParameter CreateParam()
         {
-            return new SqliteParameter();
+            return new SQLiteParameter();
         }
     }
 }

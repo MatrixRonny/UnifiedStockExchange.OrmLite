@@ -1,11 +1,11 @@
-﻿using System;
+﻿using NUnit.Framework;
+using ServiceStack.DataAnnotations;
+using ServiceStack.OrmLite.Sqlite;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using NUnit.Framework;
-using ServiceStack.DataAnnotations;
-using ServiceStack.OrmLite.Sqlite;
 
 
 namespace ServiceStack.OrmLite.Tests
@@ -20,7 +20,7 @@ namespace ServiceStack.OrmLite.Tests
             DialectProvider = customSqlServerDialectProvider;
             DbFactory = new OrmLiteConnectionFactory(SqliteDb.MemoryConnection, customSqlServerDialectProvider, false);
         }
-        
+
         [SetUp]
         public void Setup()
         {
@@ -62,7 +62,7 @@ namespace ServiceStack.OrmLite.Tests
             db.DropTable<SeparateWaybillIn>();
 
             db.CreateTable<SeparateWaybillIn>();
-            db.Insert(new SeparateWaybillIn { Id = 1, DateBegin = DateTime.Parse("2014-01-01"), DateEnd = DateTime.Parse("2014-01-03"), Note = "firstNote"});
+            db.Insert(new SeparateWaybillIn { Id = 1, DateBegin = DateTime.Parse("2014-01-01"), DateEnd = DateTime.Parse("2014-01-03"), Note = "firstNote" });
             db.Insert(new SeparateWaybillIn { Id = 2, DateBegin = DateTime.Parse("2015-01-01"), DateEnd = DateTime.Parse("2015-01-03"), Note = "secondNote" });
             db.Insert(new SeparateWaybillIn { Id = 3, DateBegin = DateTime.Parse("2016-01-01"), DateEnd = DateTime.Parse("2016-01-03"), Note = "thirdNote" });
         }
@@ -223,13 +223,13 @@ namespace ServiceStack.OrmLite.Tests
             using var db = OpenDbConnection();
             var q1 = db.From<WaybillIn>();
             q1.PrefixFieldWithTableName = true;
-            q1.Select(x => new {x.Name, x.Number});
+            q1.Select(x => new { x.Name, x.Number });
             q1.SelectInto<WaybillIn>(QueryType.Select);
             var sql1 = q1.SelectExpression;
 
             var q2 = db.From<WaybillBase>();
             q2.PrefixFieldWithTableName = true;
-            q2.Select(x => new {x.Name, x.Number});
+            q2.Select(x => new { x.Name, x.Number });
             q2.SelectInto<WaybillIn>(QueryType.Select);
             var sql2 = q2.SelectExpression;
 
@@ -260,7 +260,7 @@ namespace ServiceStack.OrmLite.Tests
             q.PrefixFieldWithTableName = true;
             q.Join<WaybillBase>((x, y) => x.Id == y.Id);
             q.Where(x => x.Name == "first" && x.Note == "firstNote");
-            q.Select(new[] {nameof(WaybillBase.Number)});
+            q.Select(new[] { nameof(WaybillBase.Number) });
             var target = db.Column<int>(q);
 
             Assert.AreEqual(1, target.Count);

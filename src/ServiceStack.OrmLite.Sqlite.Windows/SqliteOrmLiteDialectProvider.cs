@@ -1,12 +1,12 @@
+using ServiceStack.OrmLite.Sqlite.Converters;
 using System;
 using System.Data;
 using System.Data.SQLite;
-using ServiceStack.OrmLite.Sqlite.Converters;
 
 namespace ServiceStack.OrmLite.Sqlite
 {
     //Alias
-    public class SqliteWindowsOrmLiteDialectProvider : SqliteOrmLiteDialectProvider {}
+    public class SqliteWindowsOrmLiteDialectProvider : SqliteOrmLiteDialectProvider { }
 
     public class SqliteOrmLiteDialectProvider : SqliteOrmLiteDialectProviderBase
     {

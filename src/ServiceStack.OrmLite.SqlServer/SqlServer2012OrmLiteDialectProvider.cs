@@ -1,12 +1,12 @@
-﻿using System;
+﻿using ServiceStack.DataAnnotations;
+using ServiceStack.Text;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using ServiceStack.DataAnnotations;
-using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite.SqlServer
 {
@@ -42,28 +42,25 @@ namespace ServiceStack.OrmLite.SqlServer
                 return AutoIncrementDefinition;
         }
 
-        protected override bool ShouldSkipInsert(FieldDefinition fieldDef) => 
+        protected override bool ShouldSkipInsert(FieldDefinition fieldDef) =>
             fieldDef.ShouldSkipInsert() && string.IsNullOrEmpty(fieldDef.Sequence);
 
-        protected override bool SupportsSequences(FieldDefinition fieldDef) => 
+        protected override bool SupportsSequences(FieldDefinition fieldDef) =>
             !string.IsNullOrEmpty(fieldDef.Sequence);
-        
-        public override List<string> ToCreateSequenceStatements(Type tableType)
+
+        public override List<string> ToCreateSequenceStatements(ModelDefinition modelDef)
         {
-            var modelDef = GetModel(tableType);
-            return SequenceList(tableType).Select(seq => $"CREATE SEQUENCE {Sequence(NamingStrategy.GetSchemaName(modelDef), seq)} AS BIGINT START WITH 1 INCREMENT BY 1 NO CACHE;").ToList();
+            return SequenceList(modelDef).Select(seq => $"CREATE SEQUENCE {Sequence(NamingStrategy.GetSchemaName(modelDef), seq)} AS BIGINT START WITH 1 INCREMENT BY 1 NO CACHE;").ToList();
         }
 
-        public override string ToCreateSequenceStatement(Type tableType, string sequenceName)
+        public override string ToCreateSequenceStatement(ModelDefinition modelDef, string sequenceName)
         {
-            var modelDef = GetModel(tableType);
             return $"CREATE SEQUENCE {Sequence(NamingStrategy.GetSchemaName(modelDef), sequenceName)} AS BIGINT START WITH 1 INCREMENT BY 1 NO CACHE;";
         }
 
-        public override List<string> SequenceList(Type tableType)
+        public override List<string> SequenceList(ModelDefinition modelDef)
         {
             var gens = new List<string>();
-            var modelDef = GetModel(tableType);
 
             foreach (var fieldDef in modelDef.FieldDefinitions)
             {
@@ -81,7 +78,7 @@ namespace ServiceStack.OrmLite.SqlServer
             string orderByExpression = null,
             int? offset = null,
             int? rows = null,
-            ISet<string> tags=null)
+            ISet<string> tags = null)
         {
             var sb = StringBuilderCache.Allocate();
             ApplyTags(sb, tags);
@@ -148,7 +145,7 @@ namespace ServiceStack.OrmLite.SqlServer
 
                 if (fieldDef.IsNonClustered)
                     sql.Append(" NONCLUSTERED");
- 
+
                 if (fieldDef.AutoIncrement)
                 {
                     sql.Append(" ").Append(AutoIncrementDefinition);
@@ -173,15 +170,13 @@ namespace ServiceStack.OrmLite.SqlServer
             return StringBuilderCache.ReturnAndFree(sql);
         }
 
-        public override string ToCreateTableStatement(Type tableType)
+        public override string ToCreateTableStatement(ModelDefinition modelDef)
         {
             var sbColumns = StringBuilderCache.Allocate();
             var sbConstraints = StringBuilderCacheAlt.Allocate();
             var sbTableOptions = StringBuilderCacheAlt.Allocate();
 
-            var fileTableAttrib = tableType.FirstAttribute<SqlServerFileTableAttribute>();
-
-            var modelDef = GetModel(tableType);
+            var fileTableAttrib = modelDef.ModelType.FirstAttribute<SqlServerFileTableAttribute>();
 
             if (fileTableAttrib == null)
             {
@@ -235,7 +230,7 @@ namespace ServiceStack.OrmLite.SqlServer
                         if (fileTableAttrib.FileTableDirectory != null)
                             sbTableOptions.Append(" ,");
 
-                        sbTableOptions.Append($" FILETABLE_COLLATE_FILENAME = {fileTableAttrib.FileTableCollateFileName ?? "database_default" }\n");
+                        sbTableOptions.Append($" FILETABLE_COLLATE_FILENAME = {fileTableAttrib.FileTableCollateFileName ?? "database_default"}\n");
                     }
                     sbTableOptions.Append(")");
                 }
@@ -269,10 +264,10 @@ namespace ServiceStack.OrmLite.SqlServer
                     .Append(".STEquals(")
                     .Append(this.GetParam(SanitizeFieldNameForParamName(fieldDef.FieldName)))
                     .Append(") = 1");
- 
+
                 AddParameter(cmd, fieldDef);
             }
-            else 
+            else
             {
                 base.AppendFieldCondition(sqlFilter, fieldDef, cmd);
             }
@@ -292,13 +287,13 @@ namespace ServiceStack.OrmLite.SqlServer
                     .Append(GetQuotedColumnName(fieldDef.FieldName))
                     .Append(".IsNull = 1");
             }
-            else 
+            else
             {
                 base.AppendNullFieldCondition(sqlFilter, fieldDef);
             }
         }
 
-        internal bool isSpatialField(FieldDefinition fieldDef) => 
+        internal bool isSpatialField(FieldDefinition fieldDef) =>
             fieldDef.FieldType.Name == "SqlGeography" || fieldDef.FieldType.Name == "SqlGeometry";
 
         internal bool hasIsNullProperty(FieldDefinition fieldDef) =>

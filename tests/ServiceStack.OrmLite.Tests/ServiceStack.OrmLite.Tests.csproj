@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net481;net8.0</TargetFrameworks>
-<!--    <TargetFramework>net8.0</TargetFramework>-->
+    <!--<TargetFrameworks>net481;net8.0</TargetFrameworks>-->
     <DebugType>portable</DebugType>
     <AssemblyName>ServiceStack.OrmLite.Tests</AssemblyName>
     <OutputType>Library</OutputType>

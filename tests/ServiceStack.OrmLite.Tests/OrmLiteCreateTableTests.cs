@@ -1,9 +1,9 @@
-using System;
-using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Common.Tests.Models;
 using ServiceStack.OrmLite.Tests.Shared;
 using ServiceStack.Text;
+using System;
+using System.Collections.Generic;
 
 namespace ServiceStack.OrmLite.Tests
 {
@@ -12,7 +12,7 @@ namespace ServiceStack.OrmLite.Tests
     [TestFixtureOrmLite]
     public class OrmLiteCreateTableTests : OrmLiteProvidersTestBase
     {
-        public OrmLiteCreateTableTests(DialectContext context) : base(context) {}
+        public OrmLiteCreateTableTests(DialectContext context) : base(context) { }
 
         [Test]
         public void Does_table_Exists()
@@ -184,7 +184,7 @@ namespace ServiceStack.OrmLite.Tests
             var converter = DialectProvider.GetStringConverter();
             var hold = converter.StringLength;
             converter.StringLength = 255;
-            var createTableSql = DialectProvider.ToCreateTableStatement(typeof(ModelWithIdAndName));
+            var createTableSql = DialectProvider.ToCreateTableStatement(ModelDefinition.CreateInstance<ModelWithIdAndName>());
 
             Console.WriteLine("createTableSql: " + createTableSql);
             if ((Dialect & Dialect.AnyPostgreSql) != Dialect)
@@ -215,7 +215,7 @@ namespace ServiceStack.OrmLite.Tests
                 db.GetLastSql().Print();
 
                 var models = new[] {
-                    new ModelWithGuid { Id = 1, Guid = Guid.NewGuid() }, 
+                    new ModelWithGuid { Id = 1, Guid = Guid.NewGuid() },
                     new ModelWithGuid { Id = 2, Guid = Guid.NewGuid() }
                 };
 
@@ -230,7 +230,7 @@ namespace ServiceStack.OrmLite.Tests
                 Assert.That(newModel.Guid, Is.EqualTo(models[0].Guid));
 
                 var newGuid = Guid.NewGuid();
-                db.Update(new ModelWithGuid {Id = models[0].Id, Guid = newGuid});
+                db.Update(new ModelWithGuid { Id = models[0].Id, Guid = newGuid });
                 db.GetLastSql().Print();
                 newModel = db.Single<ModelWithGuid>(q => q.Id == models[0].Id);
                 Assert.That(newModel.Guid, Is.EqualTo(newGuid));
@@ -302,10 +302,19 @@ namespace ServiceStack.OrmLite.Tests
                 db.DropAndCreateTable<ModelWithNumerics>();
                 db.GetLastSql().Print();
 
-                var defaultValues = new ModelWithNumerics {
-                    Id = 1, Byte = 0, Short = 0, UShort = 0, 
-                    Int = 0, UInt = 0, Long = 0, ULong = 0, 
-                    Float = 0, Double = 0, Decimal = 0,
+                var defaultValues = new ModelWithNumerics
+                {
+                    Id = 1,
+                    Byte = 0,
+                    Short = 0,
+                    UShort = 0,
+                    Int = 0,
+                    UInt = 0,
+                    Long = 0,
+                    ULong = 0,
+                    Float = 0,
+                    Double = 0,
+                    Decimal = 0,
                 };
                 db.Insert(defaultValues);
 
@@ -330,7 +339,7 @@ namespace ServiceStack.OrmLite.Tests
                 set => Attributes[attributeName] = value;
             }
 
-            Dictionary<string, object> Attributes { get; set; } 
+            Dictionary<string, object> Attributes { get; set; }
         }
 
         [Test]
@@ -389,17 +398,17 @@ namespace ServiceStack.OrmLite.Tests
                 db.DropAndCreateTable<UserEntity>();
                 db.DropAndCreateTable<AnswerEntity>();
 
-                var userId = db.Insert(new UserEntity 
-                { 
-                    Id = 1, 
+                var userId = db.Insert(new UserEntity
+                {
+                    Id = 1,
                     Created = DateTime.UtcNow,
                     Updated = DateTime.UtcNow
-                }, 
+                },
                 selectIdentity: true);
 
                 db.Insert(new AnswerEntity
                 {
-                    UserId = userId, 
+                    UserId = userId,
                     Created = DateTime.UtcNow,
                     Updated = DateTime.UtcNow,
                 });

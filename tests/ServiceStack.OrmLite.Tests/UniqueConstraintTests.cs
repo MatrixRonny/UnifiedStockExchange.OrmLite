@@ -1,9 +1,9 @@
-﻿using System;
-using System.Text;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Model;
 using ServiceStack.Text;
+using System;
+using System.Text;
 
 namespace ServiceStack.OrmLite.Tests
 {
@@ -40,7 +40,7 @@ namespace ServiceStack.OrmLite.Tests
     [TestFixtureOrmLite]
     public class UniqueConstraintTests : OrmLiteProvidersTestBase
     {
-        public UniqueConstraintTests(DialectContext context) : base(context) {}
+        public UniqueConstraintTests(DialectContext context) : base(context) { }
 
         [Test]
         public void Does_add_individual_Constraints()
@@ -95,7 +95,7 @@ namespace ServiceStack.OrmLite.Tests
             {
                 db.DropAndCreateTable<UniqueTest3>();
 
-                var createSql = DialectProvider.ToCreateTableStatement(typeof(UniqueTest3));
+                var createSql = DialectProvider.ToCreateTableStatement(ModelDefinition.CreateInstance<UniqueTest3>());
                 Assert.That(createSql.ToUpper(), Does.Contain("CONSTRAINT UC_CUSTOM UNIQUE"));
 
                 db.Insert(new UniqueTest3 { Field4 = "A", Field5 = "A", Field6 = "A" });
@@ -122,7 +122,7 @@ namespace ServiceStack.OrmLite.Tests
             public Guid Environment { get; set; }
             public string Name { get; set; }
         }
-        
+
         [Test]
         public void Can_create_User_table_with_Unique_constraints()
         {
@@ -133,7 +133,7 @@ namespace ServiceStack.OrmLite.Tests
             }
         }
     }
-    
+
 
     public class UniqueTest4 : IHasId<int>
     {
@@ -154,7 +154,7 @@ namespace ServiceStack.OrmLite.Tests
         [Required]
         [StringLength(300)]
         public string UniqueNonClustered { get; set; }
-    }    
+    }
 
     public class SqlServer2012UniqueTests : OrmLiteTestBase
     {
@@ -169,8 +169,8 @@ namespace ServiceStack.OrmLite.Tests
             {
                 db.DropAndCreateTable<UniqueTest4>();
             }
-            
-//            sb.ToString().Print();
+
+            //            sb.ToString().Print();
             var sql = sb.ToString();
             Assert.That(sql, Does.Contain("PRIMARY KEY NONCLUSTERED"));
             Assert.That(sql, Does.Contain("VARCHAR(100) NOT NULL,"));
@@ -195,8 +195,8 @@ namespace ServiceStack.OrmLite.Tests
             {
                 db.DropAndCreateTable<UniqueTest4>();
             }
-            
-//            sb.ToString().Print();
+
+            //            sb.ToString().Print();
             var sql = sb.ToString();
             Assert.That(sql, Does.Contain("PRIMARY KEY NONCLUSTERED"));
             Assert.That(sql, Does.Contain("VARCHAR(100) NOT NULL,"));
@@ -207,5 +207,5 @@ namespace ServiceStack.OrmLite.Tests
             Assert.That(sql, Does.Contain("CREATE UNIQUE NONCLUSTERED INDEX "));
         }
     }
-    
+
 }

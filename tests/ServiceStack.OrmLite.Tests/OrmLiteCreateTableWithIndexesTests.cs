@@ -1,13 +1,13 @@
 using NUnit.Framework;
-using ServiceStack.Text;
 using ServiceStack.Common.Tests.Models;
+using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite.Tests
 {
     [TestFixtureOrmLite]
     public class OrmLiteCreateTableWithIndexesTests : OrmLiteProvidersTestBase
     {
-        public OrmLiteCreateTableWithIndexesTests(DialectContext context) : base(context) {}
+        public OrmLiteCreateTableWithIndexesTests(DialectContext context) : base(context) { }
 
         [Test]
         public void Can_create_ModelWithIndexFields_table()
@@ -16,7 +16,7 @@ namespace ServiceStack.OrmLite.Tests
             {
                 db.CreateTable<ModelWithIndexFields>(true);
 
-                var sql = DialectProvider.ToCreateIndexStatements(typeof(ModelWithIndexFields)).Join();
+                var sql = DialectProvider.ToCreateIndexStatements(ModelDefinition.CreateInstance<ModelWithIndexFields>()).Join();
 
                 var indexName = "idx_modelwithindexfields_name";
                 var uniqueName = "uidx_modelwithindexfields_uniquename";
@@ -40,7 +40,7 @@ namespace ServiceStack.OrmLite.Tests
             {
                 db.CreateTable<ModelWithCompositeIndexFields>(true);
 
-                var sql = DialectProvider.ToCreateIndexStatements(typeof(ModelWithCompositeIndexFields)).Join();
+                var sql = DialectProvider.ToCreateIndexStatements(ModelDefinition.CreateInstance<ModelWithCompositeIndexFields>()).Join();
 
                 var indexName = "idx_modelwithcompositeindexfields_name";
                 var compositeName = "idx_modelwithcompositeindexfields_composite1_composite2";
@@ -64,7 +64,7 @@ namespace ServiceStack.OrmLite.Tests
                 db.CreateTable<ModelWithCompositeIndexFieldsDesc>(true);
                 db.GetLastSql().Print();
 
-                var sql = DialectProvider.ToCreateIndexStatements(typeof(ModelWithCompositeIndexFieldsDesc)).Join();
+                var sql = DialectProvider.ToCreateIndexStatements(ModelDefinition.CreateInstance<ModelWithCompositeIndexFieldsDesc>()).Join();
 
                 var indexName = "idx_modelwithcompositeindexfieldsdesc_name";
                 var compositeName = "idx_modelwithcompositeindexfieldsdesc_composite1_composite2";
@@ -89,7 +89,7 @@ namespace ServiceStack.OrmLite.Tests
                 db.CreateTable<ModelWithCompositeIndexOnFieldSpacesDesc>(true);
                 db.GetLastSql().Print();
 
-                var sql = DialectProvider.ToCreateIndexStatements(typeof(ModelWithCompositeIndexOnFieldSpacesDesc)).Join();
+                var sql = DialectProvider.ToCreateIndexStatements(ModelDefinition.CreateInstance<ModelWithCompositeIndexOnFieldSpacesDesc>()).Join();
 
                 var compositeName = "idx_modelwithcompositeindexonfieldspacesdesc_field_field";
 
@@ -107,7 +107,7 @@ namespace ServiceStack.OrmLite.Tests
             {
                 db.CreateTable<ModelWithNamedCompositeIndex>(true);
 
-                var sql = DialectProvider.ToCreateIndexStatements(typeof(ModelWithNamedCompositeIndex)).Join();
+                var sql = DialectProvider.ToCreateIndexStatements(ModelDefinition.CreateInstance<ModelWithNamedCompositeIndex>()).Join();
 
                 var indexName = "idx_modelwithnamedcompositeindex_name";
                 var compositeName = "uidx_modelwithnamedcompositeindexfields_composite1_composite2";
