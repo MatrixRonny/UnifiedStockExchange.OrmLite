@@ -1,14 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Reflection;
-using System.Text;
-using System.Linq;
 using FirebirdSql.Data.FirebirdClient;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Firebird.Converters;
 using ServiceStack.Text;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Reflection;
+using System.Text;
 
 namespace ServiceStack.OrmLite.Firebird
 {
@@ -20,8 +20,8 @@ namespace ServiceStack.OrmLite.Firebird
                 begin
                     execute statement 'CREATE SEQUENCE {sequence};';
                 end
-            END";  
-        
+            END";
+
         public static List<string> RESERVED = new List<string>(new[] {
             "USER","ORDER","PASSWORD", "ACTIVE","LEFT","DOUBLE", "FLOAT", "DECIMAL","STRING", "DATE","DATETIME", "TYPE","TIMESTAMP",
             "INDEX","UNIQUE", "PRIMARY", "KEY", "ALTER", "DROP", "CREATE", "DELETE", "VALUES", "FUNCTION", "INT", "LONG", "CHAR", "VALUE", "TIME"
@@ -63,8 +63,8 @@ namespace ServiceStack.OrmLite.Firebird
                 { OrmLiteVariables.SystemUtc, "CURRENT_TIMESTAMP" },
                 { OrmLiteVariables.MaxText, "VARCHAR(1000)" },
                 { OrmLiteVariables.MaxTextUnicode, "VARCHAR(1000)" },
-                { OrmLiteVariables.True, SqlBool(true) },                
-                { OrmLiteVariables.False, SqlBool(false) },                
+                { OrmLiteVariables.True, SqlBool(true) },
+                { OrmLiteVariables.False, SqlBool(false) },
             };
         }
 
@@ -172,8 +172,8 @@ namespace ServiceStack.OrmLite.Firebird
 
             var strReturning = StringBuilderCacheAlt.ReturnAndFree(sbReturningColumns);
             var sql = string.Format("INSERT INTO {0} ({1}) VALUES ({2}) {3};",
-                GetQuotedTableName(modelDef), 
-                StringBuilderCache.ReturnAndFree(sbColumnNames), 
+                GetQuotedTableName(modelDef),
+                StringBuilderCache.ReturnAndFree(sbColumnNames),
                 StringBuilderCacheAlt.ReturnAndFree(sbColumnValues),
                 strReturning.Length > 0 ? "RETURNING " + strReturning : "");
 
@@ -187,8 +187,8 @@ namespace ServiceStack.OrmLite.Firebird
                 fieldDef.Sequence = Sequence(modelDef.ModelName, fieldDef.FieldName, fieldDef.Sequence);
             }
         }
-		
-        protected override bool ShouldSkipInsert(FieldDefinition fieldDef) => 
+
+        protected override bool ShouldSkipInsert(FieldDefinition fieldDef) =>
             fieldDef.ShouldSkipInsert() || (fieldDef.IsComputed && !fieldDef.IsPersisted);
 
         protected virtual bool ShouldReturnOnInsert(ModelDefinition modelDef, FieldDefinition fieldDef) =>
@@ -197,8 +197,8 @@ namespace ServiceStack.OrmLite.Firebird
         public override bool HasInsertReturnValues(ModelDefinition modelDef) =>
             modelDef.FieldDefinitions.Any(x => x.ReturnOnInsert || (x.AutoId && x.FieldType == typeof(Guid)));
 
-        public override void PrepareParameterizedInsertStatement<T>(IDbCommand cmd, ICollection<string> insertFields = null, 
-            Func<FieldDefinition,bool> shouldInclude=null)
+        public override void PrepareParameterizedInsertStatement<T>(IDbCommand cmd, ICollection<string> insertFields = null,
+            Func<FieldDefinition, bool> shouldInclude = null, string tableName = null)
         {
             var sbColumnNames = StringBuilderCache.Allocate();
             var sbColumnValues = StringBuilderCacheAlt.Allocate();
@@ -218,7 +218,7 @@ namespace ServiceStack.OrmLite.Firebird
                     sbReturningColumns.Append(GetQuotedColumnName(fieldDef.FieldName));
                 }
 
-                
+
                 if ((ShouldSkipInsert(fieldDef) && !fieldDef.AutoIncrement && !fieldDef.AutoId && string.IsNullOrEmpty(fieldDef.Sequence))
                     && shouldInclude?.Invoke(fieldDef) != true)
                     continue;
@@ -239,7 +239,7 @@ namespace ServiceStack.OrmLite.Firebird
                     }
                     else
                     {
-                        sbColumnValues.Append(this.GetParam(SanitizeFieldNameForParamName(fieldDef.FieldName),fieldDef.CustomInsert));
+                        sbColumnValues.Append(this.GetParam(SanitizeFieldNameForParamName(fieldDef.FieldName), fieldDef.CustomInsert));
                         AddParameter(cmd, fieldDef);
                     }
                 }
@@ -252,8 +252,8 @@ namespace ServiceStack.OrmLite.Firebird
 
             var strReturning = StringBuilderCacheAlt.ReturnAndFree(sbReturningColumns);
             cmd.CommandText = string.Format("INSERT INTO {0} ({1}) VALUES ({2}) {3}",
-                GetQuotedTableName(modelDef), 
-                StringBuilderCache.ReturnAndFree(sbColumnNames), 
+                GetQuotedTableName(modelDef),
+                StringBuilderCache.ReturnAndFree(sbColumnNames),
                 StringBuilderCacheAlt.ReturnAndFree(sbColumnValues),
                 strReturning.Length > 0 ? "RETURNING " + strReturning : "");
         }
@@ -301,19 +301,18 @@ namespace ServiceStack.OrmLite.Firebird
 
             var strFilter = StringBuilderCacheAlt.ReturnAndFree(sqlFilter);
             dbCmd.CommandText = string.Format("UPDATE {0} \nSET {1} {2}",
-                GetQuotedTableName(modelDef), 
+                GetQuotedTableName(modelDef),
                 StringBuilderCache.ReturnAndFree(sql),
                 strFilter.Length > 0 ? "\nWHERE " + strFilter : "");
         }
 
-        public override string ToCreateTableStatement(Type tableType)
+        public override string ToCreateTableStatement(ModelDefinition modelDef)
         {
             var sbColumns = StringBuilderCache.Allocate();
             var sbConstraints = StringBuilderCacheAlt.Allocate();
 
             var sbPk = new StringBuilder();
 
-            var modelDef = GetModel(tableType);
             foreach (var fieldDef in CreateTableFieldsStrategy(modelDef))
             {
                 if (fieldDef.CustomSelect != null)
@@ -352,10 +351,9 @@ namespace ServiceStack.OrmLite.Firebird
             return sql;
         }
 
-        public override List<string> ToCreateSequenceStatements(Type tableType)
+        public override List<string> ToCreateSequenceStatements(ModelDefinition modelDef)
         {
             var gens = new List<string>();
-            var modelDef = GetModel(tableType);
 
             foreach (var fieldDef in modelDef.FieldDefinitions)
             {
@@ -371,7 +369,7 @@ namespace ServiceStack.OrmLite.Firebird
 
         public override string GetColumnDefinition(FieldDefinition fieldDef)
         {
-            var fieldDefinition = ResolveFragment(fieldDef.CustomFieldDefinition) 
+            var fieldDefinition = ResolveFragment(fieldDef.CustomFieldDefinition)
                 ?? GetColumnTypeDefinition(fieldDef.ColumnType, fieldDef.FieldLength, fieldDef.Scale);
 
             var sql = StringBuilderCache.Allocate();
@@ -399,11 +397,10 @@ namespace ServiceStack.OrmLite.Firebird
             return StringBuilderCacheAlt.ReturnAndFree(sql);
         }
 
-        public override List<string> ToCreateIndexStatements(Type tableType)
+        public override List<string> ToCreateIndexStatements(ModelDefinition modelDef)
         {
             var sqlIndexes = new List<string>();
 
-            var modelDef = GetModel(tableType);
             foreach (var fieldDef in modelDef.FieldDefinitions)
             {
                 if (!fieldDef.IsIndexed) continue;
@@ -453,8 +450,8 @@ namespace ServiceStack.OrmLite.Firebird
                     modelDef.RowVersion.FieldName.SqlColumn(this));
 
                 var sql = "CREATE OR ALTER TRIGGER {0} BEFORE UPDATE ON {1} AS BEGIN {2} END;".Fmt(
-                    Quote(triggerName), 
-                    GetTableName(modelDef.ModelName, modelDef.Schema), 
+                    Quote(triggerName),
+                    GetTableName(modelDef.ModelName, modelDef.Schema),
                     triggerBody);
 
                 return sql;
@@ -678,7 +675,7 @@ namespace ServiceStack.OrmLite.Firebird
                     ? $"{NamingStrategy.GetSchemaName(schema)}_{NamingStrategy.GetTableName(table)}"
                     : NamingStrategy.GetTableName(table);
             }
-            
+
             return schema != null
                 ? $"{schema}_{table}"
                 : table;
@@ -713,7 +710,7 @@ namespace ServiceStack.OrmLite.Firebird
         {
             return new FbParameter();
         }
-        
+
         public override bool DoesSchemaExist(IDbCommand dbCmd, string schemaName)
         {
             dbCmd.CommandText = $"SELECT 1 FROM sys.schemas WHERE name = {schemaName.Quoted()}";
@@ -731,8 +728,8 @@ namespace ServiceStack.OrmLite.Firebird
         {
             tableName = GetTableName(tableName, schema);
 
-//            if (!QuoteNames & !RESERVED.Contains(tableName.ToUpper()))
-//                tableName = tableName.ToUpper();
+            //            if (!QuoteNames & !RESERVED.Contains(tableName.ToUpper()))
+            //                tableName = tableName.ToUpper();
 
             var sql = $"SELECT COUNT(*) FROM rdb$relations WHERE rdb$system_flag = 0 AND rdb$view_blr IS NULL AND rdb$relation_name = '{tableName}'";
 
@@ -767,22 +764,22 @@ namespace ServiceStack.OrmLite.Firebird
         }
 
         #region DDL
-        public override string ToAddColumnStatement(Type modelType, FieldDefinition fieldDef)
+        public override string ToAddColumnStatement(ModelDefinition modelDef, FieldDefinition fieldDef)
         {
             var column = GetColumnDefinition(fieldDef);
-            return $"ALTER TABLE {GetQuotedTableName(GetModel(modelType))} ADD {column} ;";
+            return $"ALTER TABLE {GetQuotedTableName(modelDef)} ADD {column} ;";
         }
 
-        public override string ToAlterColumnStatement(Type modelType, FieldDefinition fieldDef)
+        public override string ToAlterColumnStatement(ModelDefinition modelDef, FieldDefinition fieldDef)
         {
             var column = GetColumnDefinition(fieldDef);
-            return $"ALTER TABLE {GetQuotedTableName(GetModel(modelType))} ALTER {column} ;";
+            return $"ALTER TABLE {GetQuotedTableName(modelDef)} ALTER {column} ;";
         }
 
-        public override string ToChangeColumnNameStatement(Type modelType, FieldDefinition fieldDef, string oldColumnName)
+        public override string ToChangeColumnNameStatement(ModelDefinition modelDef, FieldDefinition fieldDef, string oldColumnName)
         {
             return string.Format("ALTER TABLE {0} ALTER {1} TO {2};",
-                GetQuotedTableName(GetModel(modelType)),
+                GetQuotedTableName(modelDef),
                 GetQuotedColumnName(oldColumnName),
                 GetQuotedColumnName(fieldDef.FieldName));
         }
@@ -794,10 +791,10 @@ namespace ServiceStack.OrmLite.Firebird
             string orderByExpression = null,
             int? offset = null,
             int? rows = null,
-            ISet<string> tags=null)
+            ISet<string> tags = null)
         {
             var sb = StringBuilderCache.Allocate();
-            ApplyTags(sb,tags);
+            ApplyTags(sb, tags);
 
             sb.Append(selectExpression)
                 .Append(bodyExpression);
@@ -820,11 +817,11 @@ namespace ServiceStack.OrmLite.Firebird
             return StringBuilderCache.ReturnAndFree(sb);
         }
 
-        public override void DropColumn(IDbConnection db, Type modelType, string columnName)
+        public override void DropColumn(IDbConnection db, ModelDefinition modelDef, string columnName)
         {
             var provider = db.GetDialectProvider();
             var command =
-                $"ALTER TABLE {provider.GetQuotedTableName(modelType.GetModelMetadata().ModelName)} DROP {provider.GetQuotedColumnName(columnName)};";
+                $"ALTER TABLE {provider.GetQuotedTableName(modelDef.ModelName)} DROP {provider.GetQuotedColumnName(columnName)};";
 
             db.ExecuteSql(command);
         }
