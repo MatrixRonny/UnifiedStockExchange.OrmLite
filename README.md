@@ -22,6 +22,10 @@ OrmLite was chosen for this task for the following reasons:
 * Support SQL generation for new runtime types
 * OrmLite code is modular, understandable and open
 
+### How to use the code
+
+At this stage, the code should be consumed as a git submodule. Building the NuGet package requires subtantial work and redesign of the build system.
+
 ### State of changes
 
 At this point, the following projects are mandatory to compile an pass tests:
@@ -44,3 +48,6 @@ Common code refactorings
 * `new SqliteConnection(connectionString)` => `new SQLiteConnection(connectionString)`
 * Missing final argument `string tableName = null` in overriden method
 * `ToCreateTableStatement(typeof(ModelWithIdAndName))` => `ModelDefinition.CreateInstance<ModelWithIdAndName>()`
+
+Dealing with failing tests
+* For now, make sure at least 70% of the tests pass when compiling for dotnet.
