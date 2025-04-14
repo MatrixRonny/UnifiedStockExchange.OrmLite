@@ -10,8 +10,8 @@
     <DefineConstants>DEBUG</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net472' ">
-    <DefineConstants>$(DefineConstants);NETFX;NET472</DefineConstants>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net481' ">
+    <DefineConstants>$(DefineConstants);NETFX;net481</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">

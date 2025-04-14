@@ -1,7 +1,7 @@
-using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
+using System.Threading.Tasks;
 
 namespace ServiceStack.OrmLite.Tests.Issues
 {
@@ -29,14 +29,14 @@ namespace ServiceStack.OrmLite.Tests.Issues
         [Alias("notes")]
         public string Notes { get; set; }
     }
-    
+
     public class BooleanTests
     {
         [Test]
         public async Task Can_create_user_with_BOOLEAN_columns()
         {
             var factory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
-            using var db = await factory.OpenAsync();
+            using var db = await factory.OpenDbConnectionAsync();
 
             db.ExecuteSql(@"
 CREATE TABLE IF NOT EXISTS `users` (
@@ -50,10 +50,11 @@ CREATE TABLE IF NOT EXISTS `users` (
 PRIMARY KEY(`id`)
 );");
 
-            var row = new User {
-                Notes = "notes", 
-                IsAdmin = true, 
-                Username = "user", 
+            var row = new User
+            {
+                Notes = "notes",
+                IsAdmin = true,
+                Username = "user",
                 Password = "pass"
             };
 

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
-<!--    <TargetFrameworks>net472;net5.0</TargetFrameworks>-->
+    <TargetFramework>net481</TargetFramework>
+<!--    <TargetFrameworks>net481;net5.0</TargetFrameworks>-->
     <AssemblyName>ServiceStack.OrmLite.FirebirdTests</AssemblyName>
     <PackageId>ServiceStack.OrmLite.FirebirdTests</PackageId>
     <LangVersion>default</LangVersion>

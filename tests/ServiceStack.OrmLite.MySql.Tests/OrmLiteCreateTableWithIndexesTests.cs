@@ -1,41 +1,41 @@
 using NUnit.Framework;
-using ServiceStack.Text;
 using ServiceStack.Common.Tests.Models;
+using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite.MySql.Tests
 {
-	[TestFixture]
-	public class OrmLiteCreateTableWithIndexesTests 
-		: OrmLiteTestBase
-	{
+    [TestFixture]
+    public class OrmLiteCreateTableWithIndexesTests
+        : OrmLiteTestBase
+    {
 
-		[Test]
-		public void Can_create_ModelWithIndexFields_table()
-		{
-			using (var db = OpenDbConnection())
-			{
-				db.CreateTable<ModelWithIndexFields>(true);
-
-				var sql = OrmLiteConfig.DialectProvider.ToCreateIndexStatements( typeof (ModelWithIndexFields) ).Join();
-				
-				Assert.IsTrue(sql.Contains("idx_modelwithindexfields_name"));
-				Assert.IsTrue(sql.Contains("uidx_modelwithindexfields_uniquename"));
-			}
-		}
-
-		[Test]
-		public void Can_create_ModelWithCompositeIndexFields_table()
-		{
+        [Test]
+        public void Can_create_ModelWithIndexFields_table()
+        {
             using (var db = OpenDbConnection())
-			{
-				db.CreateTable<ModelWithCompositeIndexFields>(true);
+            {
+                db.CreateTable<ModelWithIndexFields>(true);
 
-				var sql = OrmLiteConfig.DialectProvider.ToCreateIndexStatements(typeof(ModelWithCompositeIndexFields)).Join();
+                var sql = OrmLiteConfig.DialectProvider.ToCreateIndexStatements(ModelDefinition.CreateInstance<ModelWithIndexFields>()).Join();
 
-				Assert.IsTrue(sql.Contains("idx_modelwithcompositeindexfields_name"));
-				Assert.IsTrue(sql.Contains("idx_modelwithcompositeindexfields_composite1_composite2"));
-			}
-		}
+                Assert.IsTrue(sql.Contains("idx_modelwithindexfields_name"));
+                Assert.IsTrue(sql.Contains("uidx_modelwithindexfields_uniquename"));
+            }
+        }
+
+        [Test]
+        public void Can_create_ModelWithCompositeIndexFields_table()
+        {
+            using (var db = OpenDbConnection())
+            {
+                db.CreateTable<ModelWithCompositeIndexFields>(true);
+
+                var sql = OrmLiteConfig.DialectProvider.ToCreateIndexStatements(ModelDefinition.CreateInstance<ModelWithCompositeIndexFields>()).Join();
+
+                Assert.IsTrue(sql.Contains("idx_modelwithcompositeindexfields_name"));
+                Assert.IsTrue(sql.Contains("idx_modelwithcompositeindexfields_composite1_composite2"));
+            }
+        }
 
         [Test]
         public void Can_create_ModelWithNamedCompositeIndex_table()
@@ -44,7 +44,7 @@ namespace ServiceStack.OrmLite.MySql.Tests
             {
                 db.CreateTable<ModelWithNamedCompositeIndex>(true);
 
-                var sql = OrmLiteConfig.DialectProvider.ToCreateIndexStatements(typeof(ModelWithNamedCompositeIndex)).Join();
+                var sql = OrmLiteConfig.DialectProvider.ToCreateIndexStatements(ModelDefinition.CreateInstance<ModelWithNamedCompositeIndex>()).Join();
 
                 Assert.IsTrue(sql.Contains("idx_modelwithnamedcompositeindex_name"));
                 Assert.IsTrue(sql.Contains("custom_index_name"));
@@ -52,5 +52,5 @@ namespace ServiceStack.OrmLite.MySql.Tests
             }
         }
 
-	}
+    }
 }

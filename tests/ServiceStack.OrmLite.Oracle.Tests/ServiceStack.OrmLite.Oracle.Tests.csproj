@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
-<!--    <TargetFrameworks>net472;net8.0</TargetFrameworks>-->
+    <TargetFramework>net481</TargetFramework>
+<!--    <TargetFrameworks>net481;net8.0</TargetFrameworks>-->
     <AssemblyName>ServiceStack.OrmLite.Oracle.Tests</AssemblyName>
     <PackageId>ServiceStack.OrmLite.Oracle.Tests</PackageId>
     <LangVersion>default</LangVersion>
@@ -11,7 +11,7 @@
     <DefineConstants>$(DefineConstants);NETCORE_SUPPORT;NETCORE</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net472' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net481' ">
     <DefineConstants>$(DefineConstants);NET45</DefineConstants>
   </PropertyGroup>
   
@@ -23,7 +23,7 @@
     <PackageReference Include="NUnit" Version="3.13.2" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net481' ">
     <Reference Include="System.Configuration" />
     <Reference Include="System.Threading" />
     <Reference Include="System.Threading.Tasks" />

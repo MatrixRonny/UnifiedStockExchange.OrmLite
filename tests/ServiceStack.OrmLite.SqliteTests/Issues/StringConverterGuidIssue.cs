@@ -1,7 +1,7 @@
-using System;
 using NUnit.Framework;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite.Converters;
+using System;
 
 namespace ServiceStack.OrmLite.Tests.Issues
 {
@@ -23,7 +23,7 @@ namespace ServiceStack.OrmLite.Tests.Issues
         public class Dto
         {
             public string Id { get; set; }
-            
+
             // Fails when using ServiceStack.OrmLite.Sqlite / System.Data.SQLite.Core due to reader.GetValue() on Guid:
             // https://forums.servicestack.net/t/ormlite-sqllite-stringconverter-behavior-change-5-4-5-6/
             // Passes when using ServiceStack.OrmLite.Sqlite.Data / Microsoft.Data.SQLite
@@ -49,7 +49,7 @@ namespace ServiceStack.OrmLite.Tests.Issues
                 return result;
             }
         }
-        
+
         [Test]
         public void Does_convert_Guid_with_Custom_String_Converter()
         {
@@ -58,17 +58,17 @@ namespace ServiceStack.OrmLite.Tests.Issues
             var dbFactory = new OrmLiteConnectionFactory(":memory:", dialectProvider);
 
             var uuid = Guid.NewGuid();
-            using (var db = dbFactory.Open())
+            using (var db = dbFactory.OpenDbConnection())
             {
                 db.CreateTable(false, typeof(DbPoco));
                 db.Insert(new DbPoco { Id = 1, UniqueId = uuid });
 
                 var result = db.Single<Dto>(db.From<DbPoco>().Where(poco => poco.UniqueId == uuid));
 
-                Assert.That(result.UniqueId, Is.EqualTo(uuid.ToString()));                
-//                Assert.That(result.UniqueId, Is.EqualTo(uuid));                
+                Assert.That(result.UniqueId, Is.EqualTo(uuid.ToString()));
+                //                Assert.That(result.UniqueId, Is.EqualTo(uuid));                
             }
         }
-        
+
     }
 }

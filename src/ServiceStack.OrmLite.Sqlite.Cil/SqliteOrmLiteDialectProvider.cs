@@ -1,7 +1,8 @@
-﻿using System;
-using System.Data;
-using Microsoft.Data.Sqlite;
+﻿using Microsoft.Data.Sqlite;
 using ServiceStack.OrmLite.Sqlite.Converters;
+using System;
+using System.Data;
+using System.Data.SQLite;
 
 namespace ServiceStack.OrmLite.Sqlite
 {
@@ -21,8 +22,8 @@ namespace ServiceStack.OrmLite.Sqlite
             connectionString = connectionString
                 .Replace(";Version=3", "")
                 .Replace(";New=True", "")
-                .Replace(";Compress=True", ""); 
-            return new SqliteConnection(connectionString);
+                .Replace(";Compress=True", "");
+            return new SQLiteConnection(connectionString);
         }
 
         public override IDbDataParameter CreateParam()

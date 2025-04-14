@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
-<!--    <TargetFrameworks>net472;net8.0</TargetFrameworks>-->
+    <TargetFramework>net481</TargetFramework>
+<!--    <TargetFrameworks>net481;net8.0</TargetFrameworks>-->
     <PackageId>ServiceStack.OrmLite.SqlServerTests</PackageId>
     <RootNamespace>ServiceStack.OrmLite.SqlServerTests</RootNamespace>
     <LangVersion>default</LangVersion>
@@ -17,7 +17,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageReference Include="NUnit" Version="3.13.2" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net481' ">
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Threading" />

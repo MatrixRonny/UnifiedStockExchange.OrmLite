@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite.MySql;
 using ServiceStack.OrmLite.MySql.Tests;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
 
 namespace ServiceStack.OrmLite.Tests
 {
@@ -13,7 +14,7 @@ namespace ServiceStack.OrmLite.Tests
     public class SqlMapperTests
     {
         [Alias("Users")]
-        public class User 
+        public class User
         {
             [AutoIncrement]
             public int Id { get; set; }
@@ -29,10 +30,10 @@ namespace ServiceStack.OrmLite.Tests
             //Setup SQL Server Connection Factory
             dbFactory = new OrmLiteConnectionFactory(MySqlConfig.ConnectionString, MySqlConfig.DialectProvider);
 
-            using (var db = dbFactory.Open())
+            using (var db = dbFactory.OpenDbConnection())
                 db.DropAndCreateTable<User>();
         }
-        
+
         [Test]
         public void BuilderSelectClause()
         {
@@ -45,7 +46,7 @@ namespace ServiceStack.OrmLite.Tests
                     var nU = new User { Age = rand.Next(70), Id = i, Name = Guid.NewGuid().ToString() };
                     data.Add(nU);
                     db.Insert(nU);
-                    nU.Id = (int) db.LastInsertId();
+                    nU.Id = (int)db.LastInsertId();
                 }
 
                 var builder = new SqlBuilder();
@@ -80,6 +81,6 @@ namespace ServiceStack.OrmLite.Tests
 
                 Assert.That(db.Scalar<int>(template.RawSql, template.Parameters), Is.EqualTo(1));
             }
-        }         
+        }
     }
 }

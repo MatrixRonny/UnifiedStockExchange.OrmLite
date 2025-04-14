@@ -1,9 +1,10 @@
-using System;
 using NUnit.Framework;
 using ServiceStack.Common.Tests.Models;
 using ServiceStack.DataAnnotations;
+using ServiceStack.OrmLite.DataAccess;
 using ServiceStack.OrmLite.MySql.DataAnnotations;
 using ServiceStack.Text;
+using System;
 
 namespace ServiceStack.OrmLite.MySql.Tests
 {
@@ -135,7 +136,7 @@ namespace ServiceStack.OrmLite.MySql.Tests
         public void Can_create_ModelWithIdAndName_table_with_specified_DefaultStringLength()
         {
             OrmLiteConfig.DialectProvider.GetStringConverter().StringLength = 255;
-            var createTableSql = OrmLiteConfig.DialectProvider.ToCreateTableStatement(typeof(ModelWithIdAndName));
+            var createTableSql = OrmLiteConfig.DialectProvider.ToCreateTableStatement(ModelDefinition.CreateInstance<ModelWithIdAndName>());
 
             Console.WriteLine("createTableSql: " + createTableSql);
             Assert.That(createTableSql.Contains("VARCHAR(255)"), Is.True);
@@ -168,11 +169,11 @@ namespace ServiceStack.OrmLite.MySql.Tests
             {
                 var modelDefinition = typeof(ModelWithCustomFiledOrder).GetModelMetadata();
                 db.DropAndCreateTable<ModelWithCustomFiledOrder>();
-                var defs=db.SqlList<(string field,string type,string @null,string key,string @default,string extra)>("desc " + modelDefinition.Name);
-                Assert.AreEqual(nameof(ModelWithCustomFiledOrder.Filed1),defs[0].field);
-                Assert.AreEqual(nameof(ModelWithCustomFiledOrder.Filed3),defs[1].field);
+                var defs = db.SqlList<(string field, string type, string @null, string key, string @default, string extra)>("desc " + modelDefinition.Name);
+                Assert.AreEqual(nameof(ModelWithCustomFiledOrder.Filed1), defs[0].field);
+                Assert.AreEqual(nameof(ModelWithCustomFiledOrder.Filed3), defs[1].field);
                 Assert.AreEqual(nameof(ModelWithCustomFiledOrder.Filed2), defs[2].field);
-                Assert.AreEqual(nameof(ModelWithCustomFiledOrder.Id),defs[3].field);
+                Assert.AreEqual(nameof(ModelWithCustomFiledOrder.Id), defs[3].field);
             }
         }
 

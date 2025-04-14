@@ -31,7 +31,7 @@ namespace ServiceStack.OrmLite.DataAccess
                 }
             }
 
-            _connection.CreateTable<T>(_tableName, overwrite);
+            _connection.CreateTable<T>(overwrite, _tableName);
         }
 
         public void DropTable()
