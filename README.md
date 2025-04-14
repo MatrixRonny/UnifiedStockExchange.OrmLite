@@ -24,7 +24,7 @@ OrmLite was chosen for this task for the following reasons:
 
 ### How to use the code
 
-At this stage, the code should be consumed as a git submodule. Building the NuGet package requires subtantial work and redesign of the build system.
+At this stage, the code should be consumed as a git submodule. Building the NuGet package requires subtantial work and redesign of the build and configuration files.
 
 ### State of changes
 
