@@ -28,7 +28,7 @@ At this stage, the code should be consumed as a git submodule. Building the NuGe
 
 ### State of changes
 
-At this point, the following projects are mandatory to compile an pass tests:
+At this point, the following projects are mandatory to compile an pass tests (see below):
 * Sqlite
 * MySql
 
@@ -48,9 +48,12 @@ Common code refactorings
 * `new SqliteConnection(connectionString)` => `new SQLiteConnection(connectionString)`
 * Missing final argument `string tableName = null` in overriden method
 * `ToCreateTableStatement(typeof(ModelWithIdAndName))` => `ModelDefinition.CreateInstance<ModelWithIdAndName>()`
+* Project file: `<TargetFramework>net481</TargetFramework>` => `<TargetFrameworks>net481;net8.0</TargetFrameworks>`
+* Project file: `<TargetFramework>net8.0</TargetFramework>` => `<TargetFrameworks>net8.0</TargetFrameworks>`
 
 Dealing with failing tests
 * For now, make sure at least 70% of the tests pass when compiling for dotnet.
+* Running the tests affected by the code changes requires installing the corresponding DB engines.
 
 ### When everything fails
 
